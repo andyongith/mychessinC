@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const struct {
-  char none;
-  char wKing; char wpawn; char wKnight; char wBishop; char wRook; char wQueen;
-  char bKing; char bPawn; char bKnight; char bBishop; char bRook; char bQueen;
-}Piece = {' ','K','P','N','B','R','Q','k','p','n','b','r','q'};
+enum Piece {
+  EMPTY=' ',
+  wKING='K',wPAWN='P',wKNIGHT='N',wBISHOP='B',wROOK='R',wQUEEN='Q',
+  bKING='k',bPAWN='p',bKNIGHT='n',bBISHOP='b',bROOK='r',bQUEEN='q'
+};
 
 static char Square[64];
 static char turn='w';
@@ -25,7 +25,7 @@ void setPos(char* fen) {
     else if('0'<=fen[i] && fen[i]<='9') {
       int skipc = (int) (fen[i]-'0');
       while(skipc--) {
-        Square[r*8 + c]=Piece.none;
+        Square[r*8 + c]=EMPTY;
         c++;
       }
     }
@@ -45,10 +45,16 @@ void drawBoard() {
   printf("%s\n", rowsBorder);
   for(int r=7; r>=0; r--) {
     for(int c=0; c<8; c++)
-      printf("  %c ", Square[r*8 + c]);
-    printf("\n%s\n", rowsBorder);
+      printf("| %c ", Square[r*8 + c]);
+    printf("|\n");
+    printf("%s\n", rowsBorder);
   }
 }
+
+static struct {
+  int from; int to;
+  char name[8];
+} Move[256];
 
 void moveFromTo(char* from, char* to) {
   int begn = (int) (from[0]-'a' + (from[1]-'1')*8);
@@ -57,13 +63,28 @@ void moveFromTo(char* from, char* to) {
   printf("(%s, %s)\n", from, to);
 
   Square[dstn] = Square[begn];
-  Square[begn] = Piece.none;
+  Square[begn] = EMPTY;
+}
+
+void calcMoves() {
+  int moveno = 0;
+  for(int i=0; i<64; i++) {
+    
+  }
+
+  while(moveno<=256) {
+    Move[moveno].from=-1;
+    Move[moveno].to=-1;
+    strcpy(Move[moveno].name, "X");
+    moveno++;
+  }
 }
 
 
 int main() {
-  setPos(startFen);
-  //setPos("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w - - 7 4");
+  //setPos(startFen);
+  setPos("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w - - 7 4");
+  //setPos("8/8/8/3R4/8/8/8/8 w - -");
   drawBoard();
 
   //moveFromTo("d2", "d4");
