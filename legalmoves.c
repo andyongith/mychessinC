@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "position.h"
+#include "miscfunctions.h"
 #include "legalmoves.h"
 
 #define MOVES_ARR_LEN 256
@@ -30,6 +31,7 @@ void addMovebyPosition(int startsqr, int targetsqr, int captures, Move* movePos)
   movePos->targetsqr = targetsqr;
   movePos->captures = captures;
   movePos->is_en_passant_pawn = false;
+  movePos->promotion = false;
 }
 
 // These all functions return no. of moves added
@@ -37,7 +39,7 @@ void addMovebyPosition(int startsqr, int targetsqr, int captures, Move* movePos)
 int addSlidingPieceMovesto(int sqr, Move* moves, int color, int (*dir)[2], int len) {
   int mv=0;
   int row=sqr/8, col=sqr%8;
-  int oppColor = color ^ (WHITE | BLACK);
+  int oppColor = oppositecolor(color);
 
   for(int i=0; i<len; i++) {
     for( int r=row+dir[i][0], c=col+dir[i][1];
@@ -45,7 +47,7 @@ int addSlidingPieceMovesto(int sqr, Move* moves, int color, int (*dir)[2], int l
         r+=dir[i][0], c+=dir[i][1] )
     {
       int index = r*8 + c;
-      int targetcolor = Board.square[index] & (WHITE | BLACK);
+      int targetcolor = colorofpiece(Board.square[index]);
       if(color == targetcolor) break;
       addMovebyPosition(sqr, index, Board.square[index]>0 ? index : -1, moves + mv);
       mv++;
@@ -59,12 +61,12 @@ int addSlidingPieceMovesto(int sqr, Move* moves, int color, int (*dir)[2], int l
 int addJumpingPieceMovesto(int sqr, Move* moves, int color, int (*dir)[2], int len) {
   int mv=0;
   int row=sqr/8, col=sqr%8;
-  int oppColor = color ^ (WHITE | BLACK);
+  int oppColor = colorofpiece(color);
 
   for(int i=0; i<len; i++) {
     int r=row+dir[i][0], c=col+dir[i][1];
     int index = r*8 + c;
-    int targetcolor = Board.square[index] & (WHITE | BLACK);
+    int targetcolor = colorofpiece(Board.square[index]);
     if( 0<=r && r<8 && 0<=c && c<8 && targetcolor!=color )
     {
       addMovebyPosition(sqr, index, Board.square[index]>0 ? index : -1, moves+mv);
@@ -75,6 +77,57 @@ int addJumpingPieceMovesto(int sqr, Move* moves, int color, int (*dir)[2], int l
   return mv;
 }
 
+int addPawnMovesto(int sqr, Move* moves, int dir, int homerow, int color, int oppColor) { // dir = 1 for white and -1 for black
+  int mv=0;
+  int row=sqr/8, col=sqr%8;
+
+   int r,c;
+  // 1 step forward
+  r=row+dir, c=col;
+  if(Board.square[r*8+c]==0) {
+    addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+    if(r==7 || r==0) moves[mv].promotion = true;
+    mv++;
+  }
+
+  // 2 step forward
+  r=row+2*dir, c=col;
+  if(row==homerow && Board.square[r*8+c]==0) {
+    addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+    moves[mv].is_en_passant_pawn = true;
+    mv++;
+  }
+
+  // captures
+  r=row+dir, c=col+1;
+  if(0<=c && c<8 && colorofpiece(Board.square[r*8+c]) == oppColor) {
+    addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+    if(r==7 || r==0) moves[mv].promotion = true;
+    mv++;
+  }
+  c=col-1;
+  if(0<=c && c<8 && colorofpiece(Board.square[r*8+c]) == oppColor) {
+    addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+    if(r==7 || r==0) moves[mv].promotion = true;
+    mv++;
+  }
+
+  // en_passant
+  r=row+dir, c=col+1;
+  if(0<=c && c<8 && Board.en_passant_pawn == row*8+c) {
+    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
+    mv++;
+  }
+  c=col-1;
+  if(0<=c && c<8 && Board.en_passant_pawn == row*8+c) {
+    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
+    mv++;
+  }
+
+  return mv;
+}
+
+// Sliding Pieces
 int addRookMovesto(int sqr, Move* moves, int color) {
   int dirOffset[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
   return addSlidingPieceMovesto(sqr, moves, color, dirOffset, 4);
@@ -90,6 +143,7 @@ int addQueenMovesto(int sqr, Move* moves, int color) {
   return addSlidingPieceMovesto(sqr, moves, color, dirOffset, 8);
 }
 
+// Jumping Pieces
 int addKingMovesto(int sqr, Move* moves, int color) {
   int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
   return addJumpingPieceMovesto(sqr, moves, color, dirOffset, 8);
@@ -100,52 +154,7 @@ int addKnightMovesto(int sqr, Move* moves, int color) {
   return addJumpingPieceMovesto(sqr, moves, color, dirOffset, 8);
 }
 
-int addPawnMovesto(int sqr, Move* moves, int dir, int homerow, int color, int oppColor) { // dir = 1 for white and -1 for black
-  int mv=0;
-  int row=sqr/8, col=sqr%8;
-
-   int r,c;
-  // 1 step forward
-  r=row+dir, c=col;
-  if(Board.square[r*8+c]==0)
-    addMovebyPosition(sqr, r*8+c, -1, moves+(mv++));
-
-  // 2 step forward
-  r=row+2*dir, c=col;
-  if(row==homerow && Board.square[r*8+c]==0) {
-    addMovebyPosition(sqr, r*8+c, -1, moves+mv);
-    // en_passant_pawn = r*8+c; // This should be placed in makeMove function
-    moves[mv].is_en_passant_pawn = true;
-    mv++;
-  }
-
-  // captures
-  r=row+dir, c=col+1;
-  if(0<=c && c<8 && (Board.square[r*8+c] & oppColor) == oppColor)
-    addMovebyPosition(sqr, r*8+c, r*8+c, moves+(mv++));
-  c=col-1;
-  if(0<=c && c<8 && (Board.square[r*8+c] & oppColor) == oppColor)
-    addMovebyPosition(sqr, r*8+c, r*8+c, moves+(mv++));
-
-  // en_passant
-  r=row+dir, c=col+1;
-  if(0<=c && c<8 && Board.en_passant_pawn == row*8+c) {
-    printf("\nEN_PASANT AVAILABLE!\n");
-    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
-    mv++;
-  }
-  c=col-1;
-  if(0<=c && c<8 && Board.en_passant_pawn == row*8+c) {
-    printf("\nEN_PASANT AVAILABLE!\n");
-    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
-    mv++;
-  }
-
-  // promotion
-
-  return mv;
-}
-
+// Pawns
 int addWhitePawnMovesto(int sqr, Move* moves) {
   return addPawnMovesto(sqr, moves, 1, 1, WHITE, BLACK);
 }
@@ -158,14 +167,14 @@ void calculate_moves() {
   int moveNum=0;
   for(int i=0; i<64; i++) {
     int piece = Board.square[i];
-    int color = piece & (WHITE | BLACK);
+    int color = colorofpiece(piece);
     if(color != Board.turn) continue;
           // piece & 00000111 => this removes the color attribute 
-         if((piece&7) == ROOK) moveNum += addRookMovesto(i, valid_moves+moveNum, color);
-    else if((piece&7) == BISHOP) moveNum += addBishopMovesto(i, valid_moves+moveNum, color);
-    else if((piece&7) == QUEEN) moveNum += addQueenMovesto(i, valid_moves+moveNum, color);
-    else if((piece&7) == KING) moveNum += addKingMovesto(i, valid_moves+moveNum, color);
-    else if((piece&7) == KNIGHT) moveNum += addKnightMovesto(i, valid_moves+moveNum, color);
+         if(typeofpiece(piece) == ROOK) moveNum += addRookMovesto(i, valid_moves+moveNum, color);
+    else if(typeofpiece(piece) == BISHOP) moveNum += addBishopMovesto(i, valid_moves+moveNum, color);
+    else if(typeofpiece(piece) == QUEEN) moveNum += addQueenMovesto(i, valid_moves+moveNum, color);
+    else if(typeofpiece(piece) == KING) moveNum += addKingMovesto(i, valid_moves+moveNum, color);
+    else if(typeofpiece(piece) == KNIGHT) moveNum += addKnightMovesto(i, valid_moves+moveNum, color);
     else if(piece == (BLACK | PAWN)) moveNum += addBlackPawnMovesto(i, valid_moves+moveNum);
     else if(piece == (WHITE | PAWN)) moveNum += addWhitePawnMovesto(i, valid_moves+moveNum);
   }
@@ -186,12 +195,30 @@ Move getMoveby(int from, int to) {
   return valid_moves[MOVES_ARR_LEN-1];
 }
 
+int askPromotionPiece() {
+  int piece = QUEEN;
+  printf("Promoting to?(Q,R,B,N) ");
+  char piecesym;
+  scanf("%s", &piecesym);
+  piece = piece_sym[piecesym];
+  return typeofpiece(piece);
+}
+
 void makeMove(Move move) {
   if(move.startsqr == -1 || move.targetsqr == -1) return;
+
   removeSquare(move.captures);
   shiftSquare(move.startsqr, move.targetsqr);
+
   if(move.is_en_passant_pawn) updateEnPassantPawn(move.targetsqr);
   else removeEnPassantPawn();
+
+  if(move.promotion) {
+    int piece = askPromotionPiece();
+    piece = currentTurn() | piece;
+    putSquare(piece, move.targetsqr);
+  }
+
   changeTurn();
 }
 

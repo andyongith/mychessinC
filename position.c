@@ -79,8 +79,16 @@ void shiftSquare(int from, int to) {
   Board.square[from] = NOPIECE;
 }
 
+void putSquare(int piece, int sqr) {
+  Board.square[sqr] = piece;
+}
+
 void changeTurn() {
   Board.turn = Board.turn == WHITE ? BLACK : WHITE;
+}
+
+int currentTurn() {
+  return Board.turn;
 }
 
 void updateEnPassantPawn(int sqr) {

@@ -30,8 +30,10 @@ void setPosition(char* fen);
 void removeSquare(int sqr);
 void shiftSquare(int from, int to);
 void changeTurn();
+int currentTurn();
 void updateEnPassantPawn(int sqr);
 void removeEnPassantPawn();
+void putSquare(int piece, int sqr);
 
 void printSquares();
 

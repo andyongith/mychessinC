@@ -17,10 +17,11 @@ int main() {
   strcpy(testFens[6], "8/8/8/4p3/3k4/8/8/8 w - - 0 1");
   strcpy(testFens[7], "8/8/8/8/3n4/8/8/8 w - - 0 1");
   strcpy(testFens[8], "7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/2r4P/1P3p2/6r1 w - - 7 4");
+  strcpy(testFens[9], "8/1P7/8/4k3/8/3K4/7p/8 w - - 0 1");
 
   initPositionVars();
   // setPosition(STARTFEN);
-  setPosition(testFens[0]);
+  setPosition(testFens[9]);
   drawBoard();
 
   // calculate_moves();
