@@ -197,8 +197,8 @@ void calcMoves() {
 
 
 int main() {
-  setPos(startFen);
-  //setPos("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w - - 7 4");
+  //setPos(startFen);
+  setPos("7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w - - 7 4");
   //setPos("8/8/8/3R4/8/8/8/8 w - -");
   //setPos("8/8/8/4K3/8/8/8/8 w - -");
   drawBoard();

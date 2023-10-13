@@ -11,7 +11,8 @@ struct __Board__ Board;
 uint8_t piece_sym['z']; // Piece Representations
 
 void initPositionVars() {
-  piece_sym[0] = ' ';
+  for(int i=0; i<'a'; i++) piece_sym[i] = ' ';
+  for(int i='a'; i<'z'; i++) piece_sym[i] = 0;
 
   piece_sym['k'] = BLACK | KING;
   piece_sym['p'] = BLACK | PAWN;
@@ -40,8 +41,9 @@ void initPositionVars() {
   piece_sym[WHITE | QUEEN] = 'Q';
 
   for(int i=0; i<64; i++) Board.square[i] = 0;
-  Board.turn = 0;
+  Board.turn = WHITE;
   Board.castle = 0;
+  Board.en_passant_pawn=-1;
   Board.fen[0] = '\0';
 }
 
@@ -64,8 +66,29 @@ void setPosition(char* fen) {
   while(i<fenlen && fen[i]==' ') i++;
 
   // Others
-  Board.turn = fen[i]=='w';
+  Board.turn = fen[i]=='w' ? WHITE : BLACK;
   
+}
+
+void removeSquare(int sqr) {
+  Board.square[sqr] = NOPIECE;
+}
+
+void shiftSquare(int from, int to) {
+  Board.square[to] = Board.square[from];
+  Board.square[from] = NOPIECE;
+}
+
+void changeTurn() {
+  Board.turn = Board.turn == WHITE ? BLACK : WHITE;
+}
+
+void updateEnPassantPawn(int sqr) {
+  Board.en_passant_pawn = sqr;
+}
+
+void removeEnPassantPawn() {
+  Board.en_passant_pawn = -1;
 }
 
 // Only For debugging(will remove it later)(dont' forget to also remove from header)

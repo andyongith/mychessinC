@@ -21,8 +21,10 @@ void drawBoard() {
       printf("%s%d |", BORDERCOLOR, row+1);
     }
 
-    char sqr = (char) piece_sym[Board.square[row*8 + col]];
-    printf(" %c ", sqr);
+    int piece = Board.square[row*8 + col];
+
+    printf("%s", piece & WHITE ? WHITECOLOR : BLACKCOLOR);
+    printf(" %c ", (char) piece_sym[piece]);
     printf("%s%s", BORDERCOLOR, colSeparator);
 
     if(col==7) {
