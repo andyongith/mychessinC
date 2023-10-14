@@ -6,7 +6,8 @@ typedef struct{
   int targetsqr;
   int captures;
   bool is_en_passant_pawn;
-  int promotion;
+  bool is_castling;
+  bool promotion;
 } Move;
 
 void numToName(int num, char name[3]);

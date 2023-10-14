@@ -18,10 +18,11 @@ int main() {
   strcpy(testFens[7], "8/8/8/8/3n4/8/8/8 w - - 0 1");
   strcpy(testFens[8], "7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/2r4P/1P3p2/6r1 w - - 7 4");
   strcpy(testFens[9], "8/1P7/8/4k3/8/3K4/7p/8 w - - 0 1");
+  strcpy(testFens[10], "rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/Rn2K1nR/ w KQkq - 0 1");
 
   initPositionVars();
   // setPosition(STARTFEN);
-  setPosition(testFens[9]);
+  setPosition(testFens[0]);
   drawBoard();
 
   // calculate_moves();
@@ -32,13 +33,21 @@ int main() {
   calculate_moves();
 
   while(1) {
-    printLegalMoves();
+    // printLegalMoves();
+    printf("Board.castle => %d\n", Board.castle);
 
     char from[3], to[3];
-    printf("\nEnter your move: ");
-    scanf("%s %s", from, to);
-    Move move = getMoveby(nameToNum(from), nameToNum(to));
-    makeMove(move);
+    printf("Enter your move: ");
+    while(1) {
+      scanf("%s %s", from, to);
+      Move move = getMoveby(nameToNum(from), nameToNum(to));
+      if(move.startsqr==-1)
+        printf("Invalid move!! Enter again: ");
+      else {
+        makeMove(move);
+        break;
+      }
+    }
 
     drawBoard();
     calculate_moves();

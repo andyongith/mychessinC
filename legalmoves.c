@@ -31,6 +31,7 @@ void addMovebyPosition(int startsqr, int targetsqr, int captures, Move* movePos)
   movePos->targetsqr = targetsqr;
   movePos->captures = captures;
   movePos->is_en_passant_pawn = false;
+  movePos->is_castling = false;
   movePos->promotion = false;
 }
 
@@ -163,6 +164,18 @@ int addBlackPawnMovesto(int sqr, Move* moves) {
   return addPawnMovesto(sqr, moves, -1, 6, BLACK, WHITE);
 }
 
+int addCastlingMove(int kingfrom, int kingto, int rooksqr, int identity, int color, Move* moves) {
+  if( Board.castle & identity != identity ) return 0;
+  int a = kingfrom<rooksqr ? kingfrom : rooksqr;
+  int b = kingfrom<rooksqr ? rooksqr : kingfrom;
+  for(int i=a+1; i<b; i++)
+    if(Board.square[i] != NOPIECE) return 0;
+
+  addMovebyPosition(kingfrom, kingto, -1, moves);
+  moves[0].is_castling = true;
+  return 1; // change this to 1
+}
+
 void calculate_moves() {
   int moveNum=0;
   for(int i=0; i<64; i++) {
@@ -180,6 +193,16 @@ void calculate_moves() {
   }
 
   // castling needs attention
+  switch(Board.turn) {
+    case WHITE:
+      moveNum += addCastlingMove(4 ,6 ,7 ,8,WHITE, valid_moves+moveNum);
+      moveNum += addCastlingMove(4 ,2 ,0 ,2,WHITE, valid_moves+moveNum);
+      break;
+    case BLACK:
+      moveNum += addCastlingMove(60,62,63,1,BLACK, valid_moves+moveNum);
+      moveNum += addCastlingMove(60,58,56,4,BLACK, valid_moves+moveNum);
+      break;
+  }
   
   while(moveNum<MOVES_ARR_LEN) {
     addMovebyPosition(-1, -1, -1, valid_moves + moveNum);
@@ -199,8 +222,13 @@ int askPromotionPiece() {
   int piece = QUEEN;
   printf("Promoting to?(Q,R,B,N) ");
   char piecesym;
-  scanf("%s", &piecesym);
-  piece = piece_sym[piecesym];
+  while(1) {
+    scanf("%s", &piecesym);
+    piece = piece_sym[piecesym];
+    if(piece == NOPIECE || piece == ' ')
+      printf("Invalid piece!! Enter again: ");
+    else break;
+  }
   return typeofpiece(piece);
 }
 
@@ -219,6 +247,24 @@ void makeMove(Move move) {
     putSquare(piece, move.targetsqr);
   }
 
+  if(move.is_castling) {
+    switch(move.targetsqr) {
+      case 6 : shiftSquare(7 ,5 ); delCastleAbility(12); break;
+      case 2 : shiftSquare(0 ,3 ); delCastleAbility(12); break;
+      case 62: shiftSquare(63,61); delCastleAbility(3 ); break;
+      case 58: shiftSquare(56,59); delCastleAbility(3 ); break;
+    }
+  } else {
+    switch(move.startsqr) {
+      case 0 : delCastleAbility( 8); break;
+      case 4 : delCastleAbility(12); break;
+      case 7 : delCastleAbility( 4); break;
+      case 56: delCastleAbility( 2); break;
+      case 60: delCastleAbility( 3); break;
+      case 63: delCastleAbility( 1); break;
+    }
+  }
+
   changeTurn();
 }
 
@@ -226,12 +272,12 @@ void printLegalMoves() {
   printf("----Legal Moves----\n");
 
   for(int i=0; i<MOVES_ARR_LEN && valid_moves[i].startsqr!=-1; i++) {
-    char sqr1[] = "a1", sqr2[] = "a1", sqr3[] = "a1";
+    char sqr1[] = "z9", sqr2[] = "z9", sqr3[] = "z9";
     numToName(valid_moves[i].startsqr, sqr1);
     numToName(valid_moves[i].targetsqr, sqr2);
     numToName(valid_moves[i].captures, sqr3);
 
-    printf("(%s,%s,{%s})\t", sqr1, sqr2, sqr3);
+    printf("(%s,%s,{%s}%d)\t", sqr1, sqr2, sqr3, valid_moves[i].is_castling);
     // printf("%s ", sqr2);
   }
   printf("\n");

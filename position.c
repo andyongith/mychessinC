@@ -62,12 +62,22 @@ void setPosition(char* fen) {
     else { Board.square[row*8 + col] = piece_sym[fen[i]]; col++; } // needs attention
     i++;
   }
-
   while(i<fenlen && fen[i]==' ') i++;
 
-  // Others
-  Board.turn = fen[i]=='w' ? WHITE : BLACK;
-  
+  // turn
+  Board.turn = fen[i++]=='w' ? WHITE : BLACK;
+  while(i<fenlen && fen[i]==' ') i++;
+
+  // castling
+  Board.castle = 0;
+  while(i<fenlen && fen[i]!=' ') {
+    switch(fen[i++]) {
+      case 'K': Board.castle |= 8; break;
+      case 'Q': Board.castle |= 4; break;
+      case 'k': Board.castle |= 2; break;
+      case 'q': Board.castle |= 1; break;
+    }
+  }
 }
 
 void removeSquare(int sqr) {
@@ -97,6 +107,10 @@ void updateEnPassantPawn(int sqr) {
 
 void removeEnPassantPawn() {
   Board.en_passant_pawn = -1;
+}
+
+void delCastleAbility(int identity) {
+  Board.castle &= ~identity;
 }
 
 // Only For debugging(will remove it later)(dont' forget to also remove from header)

@@ -34,6 +34,7 @@ int currentTurn();
 void updateEnPassantPawn(int sqr);
 void removeEnPassantPawn();
 void putSquare(int piece, int sqr);
+void delCastleAbility(int identity);
 
 void printSquares();
 
