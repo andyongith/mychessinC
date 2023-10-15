@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "position.h"
+#include "miscfunctions.h"
 #include "display.h"
 
 #define BORDERCOLOR "\033[32;1m"
@@ -12,7 +13,7 @@
 char rowSeparator[] = "+---+---+---+---+---+---+---+---+";
 char colSeparator[] = "|";
 
-void drawBoard() {
+void drawBoard(board_t* board) {
   printf("  %s%s\n", BORDERCOLOR, rowSeparator);
 
   int row=7, col=0;
@@ -21,7 +22,7 @@ void drawBoard() {
       printf("%s%d |", BORDERCOLOR, row+1);
     }
 
-    int piece = Board.square[row*8 + col];
+    int piece = board->square[row*8 + col];
 
     printf("%s", piece & WHITE ? WHITECOLOR : BLACKCOLOR);
     printf(" %c ", (char) piece_sym[piece]);
@@ -35,4 +36,26 @@ void drawBoard() {
     else col++;
   }
   printf("%s    a   b   c   d   e   f   g   h%s\n", BORDERCOLOR, RESETCOLOR);
+}
+
+// Only For debugging(will remove it later)(don't forget to also remove from header)
+void printSquares(board_t* board) {
+  for(int i=0; i<64; i++) {
+    printf("%c,", piece_sym[board->square[i]]);
+  }
+}
+
+void printLegalMoves(board_t* board, move_t* moves) {
+  printf("----Legal Moves----\n");
+
+  for(int i=0; i<MOVES_ARR_LEN && moves[i].startsqr!=-1; i++) {
+    char sqr1[] = "z9", sqr2[] = "z9", sqr3[] = "z9";
+    indexToName(moves[i].startsqr, sqr1);
+    indexToName(moves[i].targetsqr, sqr2);
+    indexToName(moves[i].captures, sqr3);
+
+    printf("(%s,%s,{%s}%d)\t", sqr1, sqr2, sqr3, moves[i].is_castling);
+    // printf("%s ", sqr2);
+  }
+  printf("\n");
 }

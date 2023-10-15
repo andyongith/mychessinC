@@ -5,37 +5,35 @@
 #include <stdint.h>
 #include <string.h>
 
-extern char STARTFEN[];
+#define STARTFEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-enum Piece {
+enum piece_types {
   NOPIECE=0,
   KING=1, PAWN=2, KNIGHT=3, BISHOP=4, ROOK=5, QUEEN=6,
   WHITE=8, BLACK=16
 };
 
-struct __Board__ {
+typedef struct {
   int square[64];
   int turn; // WHITE or BLACK
   uint8_t castle; // bitfield in the format KQkq, for example 1001 means black can castle queen side and white can castle king side only
   int en_passant_pawn;
   char fen[64];
-};
-extern struct __Board__ Board;
+} board_t;
 
 extern uint8_t piece_sym['z']; // Piece Representations or symbols, can be used for parsing fen and displaying current position
 
-void initPositionVars();
+void init_board(board_t* board);
+void initPositionVars(board_t* board);
 
-void setPosition(char* fen);
-void removeSquare(int sqr);
-void shiftSquare(int from, int to);
-void changeTurn();
-int currentTurn();
-void updateEnPassantPawn(int sqr);
-void removeEnPassantPawn();
-void putSquare(int piece, int sqr);
-void delCastleAbility(int identity);
-
-void printSquares();
+void setPosition(char* fen, board_t* board);
+void delPiecefrom(int sqr, board_t* board);
+void shiftPiece(int from, int to, board_t* board);
+void switchTurn(board_t* board);
+int getTurn(board_t* board);
+void setEnPassantPawn(int sqr, board_t* board);
+void delEnPassantPawn(board_t* board);
+void setPiece(int piece, int sqr, board_t* board);
+void delCastleAbility(int identity, board_t* board);
 
 #endif // POSITION_H

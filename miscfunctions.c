@@ -2,6 +2,22 @@
 #include "position.h"
 #include "miscfunctions.h"
 
+void indexToName(int num, char name[3]) {
+  if(num==-1) strcpy(name, "  ");
+  else {
+    name[0] = num%8 + 'a';
+    name[1] = num/8 + '1';
+    name[2] = '\0';
+  }
+}
+
+int nameToIndex(char name[3]) {
+  if(name[0]<'a' || name[0]>'z' || name[1]<'1' || name[1]>'8') return 0;
+  int col = name[0]-'a';
+  int row = name[1]-'1';
+  return row*8 + col;
+}
+
 int colorofpiece(int piece) {
   return piece & 24; // 24 = WHITE | BLACK
 }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "miscfunctions.h"
 #include "position.h"
 #include "display.h"
 #include "legalmoves.h"
@@ -20,41 +21,44 @@ int main() {
   strcpy(testFens[9], "8/1P7/8/4k3/8/3K4/7p/8 w - - 0 1");
   strcpy(testFens[10], "rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/Rn2K1nR/ w KQkq - 0 1");
 
-  initPositionVars();
-  // setPosition(STARTFEN);
-  setPosition(testFens[0]);
-  drawBoard();
+  board_t Board;
+  move_t valid_moves[MOVES_ARR_LEN];
 
-  // calculate_moves();
-  // Move firstMove = getMoveby(11, 19);
-  // makeMove(firstMove);
-  // drawBoard();
+  initPositionVars(&Board);
+  // setPosition(STARTFEN, &Board);
+  setPosition(testFens[0], &Board);
+  drawBoard(&Board);
 
-  calculate_moves();
+  // update_legal_moves(valid_moves, &BoardBoard, valid_moves);
+  // move_t firstMove = getLegalMoveby(11, 19, &Board);
+  // makeMove(firstMove, &Board);
+  // drawBoard(&Board);
+
+  update_legal_moves(&Board, valid_moves);
 
   while(1) {
-    // printLegalMoves();
-    printf("Board.castle => %d\n", Board.castle);
+    // printLegalMoves(&Board);
+    // printf("Board.castle => %d\n", Board.castle);
 
     char from[3], to[3];
     printf("Enter your move: ");
     while(1) {
       scanf("%s %s", from, to);
-      Move move = getMoveby(nameToNum(from), nameToNum(to));
+      move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &Board, valid_moves);
       if(move.startsqr==-1)
         printf("Invalid move!! Enter again: ");
       else {
-        makeMove(move);
+        makeMove(&Board, move);
         break;
       }
     }
 
-    drawBoard();
-    calculate_moves();
+    drawBoard(&Board);
+    update_legal_moves(&Board, valid_moves);
   }
 
-  // printSquares();
-  // printLegalMoves();
+  // printSquares(&Board);
+  // printLegalMoves(&Board);
 
   return 0;
 }
