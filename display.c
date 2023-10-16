@@ -45,7 +45,7 @@ void printSquares(board_t* board) {
   }
 }
 
-void printLegalMoves(board_t* board, move_t* moves) {
+void printLegalMoves(move_t* moves) {
   printf("----Legal Moves----\n");
 
   for(int i=0; i<MOVES_ARR_LEN && moves[i].startsqr!=-1; i++) {
@@ -54,7 +54,8 @@ void printLegalMoves(board_t* board, move_t* moves) {
     indexToName(moves[i].targetsqr, sqr2);
     indexToName(moves[i].captures, sqr3);
 
-    printf("(%s,%s,{%s}%d)\t", sqr1, sqr2, sqr3, moves[i].is_castling);
+    // printf("(%s,%s,{%s}%d)\t", sqr1, sqr2, sqr3, moves[i].is_castling);
+    printf("(%s %s)\t", sqr1, sqr2);
     // printf("%s ", sqr2);
   }
   printf("\n");

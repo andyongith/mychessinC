@@ -29,3 +29,11 @@ int typeofpiece(int piece) {
 int oppositecolor(int color) {
   return color ^ 24; // 24 = WHITE | BLACK
 }
+
+int searchIn(int array[], int len, int target) {
+  int index = -1;
+  for(int i=0; i<len; i++) {
+    if(array[i] == target) return i;
+  }
+  return index;
+}

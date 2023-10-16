@@ -44,7 +44,7 @@ void setPosition(char* fen, board_t* board) {
       int skipcol = (int) (fen[i]-'0');
       while(skipcol--) { board->square[row*8 + col]=0; col++; }
     }
-    else { board->square[row*8 + col] = piece_sym[fen[i]]; col++; } // needs attention
+    else { board->square[row*8 + col] = piece_sym[fen[i]]; col++; }
     i++;
   }
   while(i<fenlen && fen[i]==' ') i++;
@@ -57,10 +57,10 @@ void setPosition(char* fen, board_t* board) {
   board->castle = 0;
   while(i<fenlen && fen[i]!=' ') {
     switch(fen[i++]) {
-      case 'K': board->castle |= 8; break;
-      case 'Q': board->castle |= 4; break;
-      case 'k': board->castle |= 2; break;
-      case 'q': board->castle |= 1; break;
+      case 'K': board->castle |= WHITE_KING_SIDE ; break; 
+      case 'Q': board->castle |= WHITE_QUEEN_SIDE; break;
+      case 'k': board->castle |= BLACK_KING_SIDE ; break;
+      case 'q': board->castle |= BLACK_QUEEN_SIDE; break;
     }
   }
 }
@@ -70,9 +70,9 @@ void shiftPiece(int from, int to, board_t* board) {
   board->square[to] = board->square[from];
   board->square[from] = NOPIECE;
 }
-void setPiece(int piece, int sqr, board_t* board) { board->square[sqr] = piece; }
+void setPieceto(int piece, int sqr, board_t* board) { board->square[sqr] = piece; }
 void switchTurn(board_t* board) { board->turn = board->turn == WHITE ? BLACK : WHITE; }
-int getTurn(board_t* board) { return board->turn; }
+int  getTurn(board_t* board) { return board->turn; }
 void setEnPassantPawn(int sqr, board_t* board) { board->en_passant_pawn = sqr; }
 void delEnPassantPawn(board_t* board) { board->en_passant_pawn = -1; }
 void delCastleAbility(int identity, board_t* board) { board->castle &= ~identity; }

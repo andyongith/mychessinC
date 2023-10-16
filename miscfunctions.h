@@ -8,4 +8,6 @@ int colorofpiece(int piece);
 int typeofpiece(int piece);
 int oppositecolor(int color);
 
+int searchIn(int array[], int len, int target);
+
 #endif

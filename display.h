@@ -6,6 +6,6 @@
 
 void drawBoard(board_t* board);
 void printSquares(board_t* board);
-void printLegalMoves(board_t* board, move_t* moves);
+void printLegalMoves(move_t* moves);
 
 #endif // DISPLAY_H

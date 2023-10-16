@@ -13,6 +13,10 @@ enum piece_types {
   WHITE=8, BLACK=16
 };
 
+enum castling_constants {
+  WHITE_KING_SIDE=8, WHITE_QUEEN_SIDE=4, BLACK_KING_SIDE=2, BLACK_QUEEN_SIDE=1
+};
+
 typedef struct {
   int square[64];
   int turn; // WHITE or BLACK
@@ -29,11 +33,11 @@ void initPositionVars(board_t* board);
 void setPosition(char* fen, board_t* board);
 void delPiecefrom(int sqr, board_t* board);
 void shiftPiece(int from, int to, board_t* board);
+void setPieceto(int piece, int sqr, board_t* board);
 void switchTurn(board_t* board);
-int getTurn(board_t* board);
+int  getTurn(board_t* board);
 void setEnPassantPawn(int sqr, board_t* board);
 void delEnPassantPawn(board_t* board);
-void setPiece(int piece, int sqr, board_t* board);
 void delCastleAbility(int identity, board_t* board);
 
 #endif // POSITION_H
