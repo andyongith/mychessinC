@@ -142,6 +142,21 @@ void update_pinned_pieces(int color, board_t* board) {
       }
     }
   }
+
+  int dirOffset2[8][2] = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
+  for(int dir=0; dir<8; dir++) {
+    int r=row+dirOffset[dir][0],c=col+dirOffset[dir][1];
+    if(!(0<=r && r<8 && 0<=c && c<8)) continue;
+    int index = r*8 + c;
+    if(squares[index]==NOPIECE ||
+        colorofpiece(squares[index])==color || typeofpiece(squares[index])!=KNIGHT) continue;
+
+    switch(checkPines[0]) {
+      case -1: checkPines[0]=index; break;
+      case 64: break;
+      default: for(int j=0; j<8; j++) checkPines[j]=64;
+    }
+  }
 }
 
 //
@@ -359,7 +374,7 @@ int addCastlingMove(
   return 1;
 }
 
-void update_legal_moves(board_t* board, move_t* moves) {
+int update_legal_moves(board_t* board, move_t* moves) {
   update_pinned_pieces(board->turn, board);
 
   int moveNum=0;
@@ -392,10 +407,13 @@ void update_legal_moves(board_t* board, move_t* moves) {
       break;
   }
   
+  int moveNumx = moveNum;
   while(moveNum<MOVES_ARR_LEN) {
     addMovebyPosition(-1, -1, -1, board, moves + moveNum);
     moveNum++;
   }
+
+  return moveNumx;
 }
 
 move_t getLegalMoveby(int from, int to, board_t* board, move_t* moves) {

@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// #include <random.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "miscfunctions.h"
 #include "position.h"
@@ -36,9 +39,10 @@ int main() {
   initPositionVars(&Board);
   setPosition(testFens[ 0], &Board);
   drawBoard(&Board);
-  update_legal_moves(&Board, valid_moves);
+  int num_of_moves = update_legal_moves(&Board, valid_moves);
 
-  while(1) {
+  srand(time(NULL));
+  while(num_of_moves>0) {
     // printLegalMoves(valid_moves);
     // printf("Board.castle => ");
     // if(Board.castle & WHITE_KING_SIDE ) printf("K");
@@ -49,19 +53,34 @@ int main() {
 
     char from[3], to[3];
     printf("Enter your move: ");
-    while(1) {
-      scanf("%s %s", from, to);
-      move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &Board, valid_moves);
-      if(move.startsqr==-1)
-        printf("Invalid move!! Enter again: ");
-      else {
-        makeMove(&Board, move);
-        break;
+    
+    if(Board.turn==WHITE) {
+      while(1) {
+        scanf("%s %s", from, to);
+        move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &Board, valid_moves);
+        if(move.startsqr==-1)
+          printf("Invalid move!! Enter again: ");
+        else {
+          makeMove(&Board, move);
+          break;
+        }
       }
     }
+    else {
+      sleep(1);
+      int moveIndex = rand() % num_of_moves;
+      // printf("(%d) ", moveIndex);
+      move_t move = valid_moves[moveIndex];
+      indexToName(move.startsqr, from);
+      indexToName(move.targetsqr, to);
+      printf("%s %s\n", from, to);
+      makeMove(&Board, move);
+    }
+    //
 
     drawBoard(&Board);
-    update_legal_moves(&Board, valid_moves);
+    num_of_moves = update_legal_moves(&Board, valid_moves);
+    // sleep(1);
   }
 
   return 0;
