@@ -10,7 +10,7 @@
 #include "legalmoves.h"
 
 int showlegals=0;
-int botmvdelay=0;
+int botmvdelay=1;
 
 board_t Board;
 move_t valid_moves[MOVES_ARR_LEN];
@@ -42,6 +42,29 @@ int main(int argc, char **argv) {
   int argi = 1;
   while(argi<argc && argv[argi][0]=='-') {
     switch(argv[argi][1]) {
+      case 'h':
+        printf("OPTIONS\n");
+        printf("-h => shows this help.\n");
+        printf("\n");
+
+        printf("-f <sub_option> => loads custom fen.\n");
+        printf("-f <your_fen_inside_quotes> => loads your custom position.\n");
+        printf("-f startfen => loads the starting position.\n");
+        printf("-f testfen <num> => loads <num>th testfen.\n");
+        printf("-f ltestfen => loads last testfen.\n");
+        printf("\n");
+
+        printf("-t => I added this option for testing purposes only.\n");
+        printf("\n");
+
+        printf("-l => Forces to always show legal moves.\n");
+        printf("\n");
+
+        printf("-d <num> => Sets delay for each bot move. Default is 1sec.\n");
+
+        return 0;
+        break;
+
       case 'f':
              if(strcmp(argv[argi+1], "startfen")==0) strcpy(loadingfen, STARTFEN);
         else if(strcmp(argv[argi+1], "ltestfen")==0) strcpy(loadingfen, testFens[feni]);
@@ -56,21 +79,12 @@ int main(int argc, char **argv) {
         return 2;
         break;
 
-      case 'h':
-        printf("OPTIONS\n");
-        printf("-h\tshows this help.\n");
-        printf("\n");
+      case 'l':
+        showlegals = true;
+        break;
 
-        printf("-f <sub_option>\tloads custom fen.\n");
-        printf("\t\"-f <your_fen_inside_quotes>\"\tloads your custom position.\n");
-        printf("\t\"-f startfen\"\tloads the starting position.\n");
-        printf("\t\"-f testfen <num>\"\tloads <num>th testfen.\n");
-        printf("\t\"-f ltestfen\"\tloads last testfen.\n");
-        printf("\n");
-
-        printf("-t\tI added this option for testing purposes only.\n");
-
-        return 0;
+      case 'd':
+        botmvdelay = stringtonum(argv[(argi++)+1]);
         break;
 
       default:
