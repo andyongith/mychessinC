@@ -1,3 +1,4 @@
+#include <string.h>
 
 #include "position.h"
 #include "miscfunctions.h"
@@ -36,4 +37,14 @@ int searchIn(int array[], int len, int target) {
     if(array[i] == target) return i;
   }
   return index;
+}
+
+int stringtonum(char *string) {
+  int digits = strlen(string);
+  int num = 0;
+  for(int i=0; i<digits; i++) {
+    num *= 10;
+    num += string[i] - '0';
+  }
+  return num;
 }

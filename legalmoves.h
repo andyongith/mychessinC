@@ -9,7 +9,7 @@ typedef struct{
   int captures;
   bool is_en_passant_pawn;
   bool is_castling;
-  bool promotion;
+  int promotingto;
 } move_t;
 
 int update_legal_moves(board_t* board, move_t* moves);

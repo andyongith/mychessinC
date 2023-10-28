@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <random.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -10,78 +9,178 @@
 #include "display.h"
 #include "legalmoves.h"
 
-int main() {
+int showlegals=0;
+int botmvdelay=0;
+
+board_t Board;
+move_t valid_moves[MOVES_ARR_LEN];
+
+void play_randomly();
+void play_manually(int side);
+
+int askPromotionPiece();
+
+void showNodesNum(board_t board, int depth) {
+}
+
+int main(int argc, char **argv) {
   char testFens[30][64];
   strcpy(testFens[ 0], STARTFEN);
-  strcpy(testFens[ 1], "7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/7P/1P3p2/6r1 w - - 7 4");
-  strcpy(testFens[ 2], "8/1r4r1/8/8/8/8/1R4R1/8 w - - 0 1");
-  strcpy(testFens[ 3], "8/8/8/8/3R4/8/8/8 w - - 0 1");
-  strcpy(testFens[ 4], "8/8/8/8/3B4/8/8/8 w - - 0 1");
-  strcpy(testFens[ 5], "8/8/8/8/3Q4/8/8/8 w - - 0 1");
-  strcpy(testFens[ 6], "8/6B1/5P2/4P3/3K4/8/8/8 w - - 0 1");
-  strcpy(testFens[ 7], "8/8/8/8/3n4/8/8/8 w - - 0 1");
-  strcpy(testFens[ 8], "7k/3N2qp/b5r1/2p1Q1N1/Pp4PK/2r4P/1P3p2/6r1 w - - 7 4");
-  strcpy(testFens[ 9], "8/1P7/8/4k3/8/3K4/7p/8 w - - 0 1");
-  strcpy(testFens[10], "rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/Rn2K1nR/ w KQkq - 0 1");
-  strcpy(testFens[11], "k7/8/2q5/8/3K4/8/8/8 w - - 0 1");
-  strcpy(testFens[12], "8/8/8/8/3K4/8/8/8 w - - 0 1");
-  strcpy(testFens[13], "8/8/8/4P3/8/8/8/8 w - - 0 1");
-  strcpy(testFens[14], "8/5b2/8/4k3/8/r2R1K2/8/3n4 w - - 0 1");
-  strcpy(testFens[15], "8/3r4/8/3R4/8/8/3K4/8 w - - 0 1");
-  strcpy(testFens[16], "1r3b1k/rN6/1R1N4/8/1K3P1r/8/3B4/4b3 w - - 0 1");
-  strcpy(testFens[17], "r3k2r/8/8/8/8/8/8/R3K2R/ w KQkq - 0 1");
-  strcpy(testFens[18], "8/3p4/8/1KP4r/8/8/4k3/8 b - - 0 1");
-  strcpy(testFens[19], "3B4/8/8/3K3r/3N4/8/4k3/3q4 w - - 0 1");
 
-  board_t Board;
-  move_t valid_moves[MOVES_ARR_LEN];
+  int feni=0;
+  strcpy(testFens[++feni], "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+  strcpy(testFens[++feni], "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
+  strcpy(testFens[++feni], "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+  strcpy(testFens[++feni], "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+  strcpy(testFens[++feni], "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
 
   initPositionVars(&Board);
-  setPosition(testFens[ 0], &Board);
-  drawBoard(&Board);
-  int num_of_moves = update_legal_moves(&Board, valid_moves);
+
+  char loadingfen[64] = STARTFEN;
+  bool noBoard = false;
+
+  int argi = 1;
+  while(argi<argc && argv[argi][0]=='-') {
+    switch(argv[argi][1]) {
+      case 'f':
+             if(strcmp(argv[argi+1], "startfen")==0) strcpy(loadingfen, STARTFEN);
+        else if(strcmp(argv[argi+1], "ltestfen")==0) strcpy(loadingfen, testFens[feni]);
+        else if(strcmp(argv[argi+1], "testfen" )==0) strcpy(loadingfen, testFens[stringtonum(argv[(argi++)+2])]);
+        else strcpy(loadingfen, argv[argi+1]);
+        argi++;
+        break;
+
+      case 't':
+        printf("\"-t\" option is for testing purposes only.\n");
+        noBoard = true;
+        return 2;
+        break;
+
+      case 'h':
+        printf("OPTIONS\n");
+        printf("-h\tshows this help.\n");
+        printf("\n");
+
+        printf("-f <sub_option>\tloads custom fen.\n");
+        printf("\t\"-f <your_fen_inside_quotes>\"\tloads your custom position.\n");
+        printf("\t\"-f startfen\"\tloads the starting position.\n");
+        printf("\t\"-f testfen <num>\"\tloads <num>th testfen.\n");
+        printf("\t\"-f ltestfen\"\tloads last testfen.\n");
+        printf("\n");
+
+        printf("-t\tI added this option for testing purposes only.\n");
+
+        return 0;
+        break;
+
+      default:
+        printf("Invalid option\nEnter \"./start -h\" for help and more\n");
+        return 1;
+    }
+    argi++;
+  }
+
+  setPosition(loadingfen, &Board);
 
   srand(time(NULL));
-  while(num_of_moves>0) {
-    // printLegalMoves(valid_moves);
-    // printf("Board.castle => ");
-    // if(Board.castle & WHITE_KING_SIDE ) printf("K");
-    // if(Board.castle & WHITE_QUEEN_SIDE) printf("Q");
-    // if(Board.castle & BLACK_KING_SIDE ) printf("k");
-    // if(Board.castle & BLACK_QUEEN_SIDE) printf("q");
-    // printf("\n");
+  if(!noBoard && argi < argc) {
+         if(strcmp(argv[argi], "white" )==0) play_manually(WHITE);
+    else if(strcmp(argv[argi], "black" )==0) play_manually(BLACK);
+    else if(strcmp(argv[argi], "both"  )==0) play_manually(0);
+    else if(strcmp(argv[argi], "random")==0) play_randomly();
+  }
+  else if(!noBoard) play_manually(WHITE);
 
-    char from[3], to[3];
-    printf("Enter your move: ");
+  return 0;
+}
+
+void play_randomly() {
+  int num_of_moves = update_legal_moves(&Board, valid_moves);
+
+  while(num_of_moves>0) {
+    printFen(Board);
+    drawBoard(Board);
+    printf("num_of_available_moves: %d\n", num_of_moves);
+    if(showlegals) printLegalMoves(valid_moves);
     
-    if(Board.turn==WHITE) {
+    sleep(botmvdelay);
+    char from[3], to[3];
+    int moveIndex = rand() % num_of_moves;
+    // printf("(%d) ", moveIndex);
+    move_t move = valid_moves[moveIndex];
+    indexToName(move.startsqr, from);
+    indexToName(move.targetsqr, to);
+    printf("\nbot played: %s %s\n", from, to);
+    makeMove(&Board, move);
+
+    num_of_moves = update_legal_moves(&Board, valid_moves);
+    // sleep(botmvdelay);
+  }
+  printFen(Board);
+  drawBoard(Board);
+}
+
+void play_manually(int side) { // side can be WHITE, BLACK or any other number for both
+  int num_of_moves = update_legal_moves(&Board, valid_moves);
+
+  while(num_of_moves>0) {
+    printFen(Board);
+    drawBoard(Board);
+    printf("num_of_available_moves: %d\n", num_of_moves);
+    if(showlegals) printLegalMoves(valid_moves);
+    
+    char from[3], to[3];
+
+    if(( side==WHITE && Board.turn==BLACK ) ||
+        ( side==BLACK && Board.turn==WHITE )) {
+      sleep(botmvdelay);
+      int moveIndex = rand() % num_of_moves;
+      // printf("(%d) ", moveIndex);
+      move_t move = valid_moves[moveIndex];
+      indexToName(move.startsqr, from);
+      indexToName(move.targetsqr, to);
+      printf("\nbot played: %s %s", from, to);
+      makeMove(&Board, move);
+    }
+    
+    else {
+      printf("Enter your move: ");
       while(1) {
         scanf("%s %s", from, to);
         move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &Board, valid_moves);
-        if(move.startsqr==-1)
+
+        if(move.promotingto!=NOPIECE) { // --- needs attention
+          int promotionPiece = askPromotionPiece();
+          move.promotingto = promotionPiece;
+        }
+        if(move.startsqr==-1) {
+          printLegalMoves(valid_moves);
           printf("Invalid move!! Enter again: ");
+        }
         else {
           makeMove(&Board, move);
           break;
         }
       }
     }
-    else {
-      sleep(1);
-      int moveIndex = rand() % num_of_moves;
-      // printf("(%d) ", moveIndex);
-      move_t move = valid_moves[moveIndex];
-      indexToName(move.startsqr, from);
-      indexToName(move.targetsqr, to);
-      printf("%s %s\n", from, to);
-      makeMove(&Board, move);
-    }
-    //
 
-    drawBoard(&Board);
     num_of_moves = update_legal_moves(&Board, valid_moves);
-    // sleep(1);
+    printf("\n");
   }
+  printFen(Board);
+  drawBoard(Board);
+}
 
-  return 0;
+int askPromotionPiece() {
+  int piece = QUEEN;
+  printf("Promoting to?(Q,R,B,N) ");
+  char piecesym;
+  while(1) {
+    scanf("%s", &piecesym);
+    piece = piece_sym[piecesym];
+    if(piece == NOPIECE || piece == ' ')
+      printf("Invalid piece!! Enter again: ");
+    else break;
+  }
+  return typeofpiece(piece);
 }

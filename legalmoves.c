@@ -89,72 +89,98 @@ void sqrsControlledby(bool out_data[64], int color, int in_squares[64]) {
 
 // Pinned Pieces
 int pinnedPieces[64][8];
-int checkPines[8]; // When not in check all values(i.e squares) are -1
+int checkPins[8]; // When not in check all values(i.e squares) are -1
                    // When in check all indices have some values and each piece can only
                    // move to the squares it contains
-                   // When in check all values are 64, means no piece can move other than
-                   // the king itself
+                   // When in double check all values are 64, means no piece can move
+                   // other than the king itself
 void update_pinned_pieces(int color, board_t* board) {
+  // initialisation
   for(int i=0; i<64; i++) {
     for(int j=0; j<8; j++) pinnedPieces[i][j]=-1;
   }
-  for(int i=0; i<8; i++) checkPines[i]=-1;
+  for(int i=0; i<8; i++) checkPins[i]=-1;
+
   int* squares = board->square;
   int kingPos = searchIn(squares, 64, color | KING);
   int row=kingPos/8, col=kingPos%8;
 
-  int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
+  // Checking orthoganally and/or diagonally
+  int lastpinningSqr=-1;
+  int dirOffset1[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
   for(int dir=0; dir<8; dir++) {
-    int pines[8];
-    int pinSqr=-1;
+    int pins[8];
+    int pinnedSqr=-1;
 
-    for( int r=row+dirOffset[dir][0],c=col+dirOffset[dir][1], i=0;
+    for( int r=row+dirOffset1[dir][0],c=col+dirOffset1[dir][1], i=0;
         0<=r && r<8 && 0<=c && c<8;
-        r+=dirOffset[dir][0], c+=dirOffset[dir][1], i++ ) {
-      pines[i] = r*8 + c;
-      if(squares[pines[i]]==NOPIECE) continue;
+        r+=dirOffset1[dir][0], c+=dirOffset1[dir][1], i++
+        ) {
 
-      int currentPiece = squares[pines[i]];
-      if(colorofpiece(currentPiece)!=color) {
-        if(pinSqr==-1) {
-          switch(checkPines[0]) {
-            case -1: for(int j=0; j<=i; j++) checkPines[j]=pines[j]; break;
-            case 64: break;
-            default: for(int j=0; j<8; j++) checkPines[j]=64;
-          }
-          break;
+      pins[i] = r*8 + c;
+      int currentPiece = squares[pins[i]];
+      if(currentPiece==NOPIECE) continue;
+
+      if(colorofpiece(currentPiece)!=color && (
+          ( dir<4 && (typeofpiece(currentPiece)==ROOK || typeofpiece(currentPiece)==QUEEN)) || 
+          ( dir>=4 && (typeofpiece(currentPiece)==BISHOP || typeofpiece(currentPiece)==QUEEN) )
+         )
+        ) {
+
+        if(pinnedSqr!=-1) {
+          for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
         }
-        if(dir<4 && !(typeofpiece(currentPiece)==ROOK || typeofpiece(currentPiece)==QUEEN)) break;
-        if(dir>=4 && !(typeofpiece(currentPiece)==BISHOP || typeofpiece(currentPiece)==QUEEN)) break;
         else {
-          int j=0;
-          while(j<=i) {
-            pinnedPieces[pinSqr][j] = pines[j];
-            j++;
+          switch(lastpinningSqr) {
+            case -1:
+              for(int j=0; j<=i; j++) checkPins[j] = pins[j];
+              break;
+            default:
+              for(int j=0; j<=i; j++) checkPins[j] = 64;
           }
-          while(j<=0) pinnedPieces[pinSqr][j++] = -1;
-          break;
+          lastpinningSqr = pins[i];
         }
+        break;
       }
-      if(pinSqr==-1) {
-        pinSqr = pines[i];
-        continue;
+
+      else if(colorofpiece(currentPiece)==color) {
+        pinnedSqr = pins[i];
       }
     }
   }
 
+  // Checking Knight
   int dirOffset2[8][2] = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
   for(int dir=0; dir<8; dir++) {
-    int r=row+dirOffset[dir][0],c=col+dirOffset[dir][1];
+    int r=row+dirOffset2[dir][0],c=col+dirOffset2[dir][1];
     if(!(0<=r && r<8 && 0<=c && c<8)) continue;
     int index = r*8 + c;
-    if(squares[index]==NOPIECE ||
-        colorofpiece(squares[index])==color || typeofpiece(squares[index])!=KNIGHT) continue;
 
-    switch(checkPines[0]) {
-      case -1: checkPines[0]=index; break;
-      case 64: break;
-      default: for(int j=0; j<8; j++) checkPines[j]=64;
+    if(squares[index]==NOPIECE ||
+        colorofpiece(squares[index])==color ||
+        typeofpiece(squares[index])!=KNIGHT) continue;
+
+    switch(lastpinningSqr) {
+      case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
+      default: for(int j=0; j<8; j++) checkPins[j]=64;
+    }
+  }
+
+  // Checking Pawn
+  int forward = color==WHITE ? 1 : -1;
+  int dirOffset3[2][2] = {{forward,-1}, {forward,1}};
+  for(int dir=0; dir<2; dir++) {
+    int r=row+dirOffset3[dir][0],c=col+dirOffset3[dir][1];
+    if(!(0<=r && r<8 && 0<=c && c<8)) continue;
+    int index = r*8 + c;
+
+    if(squares[index]==NOPIECE ||
+        colorofpiece(squares[index])==color ||
+        typeofpiece(squares[index])!=PAWN) continue;
+
+    switch(lastpinningSqr) {
+      case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
+      default: for(int j=0; j<8; j++) checkPins[j]=64;
     }
   }
 }
@@ -167,7 +193,7 @@ void addMovebyPosition(
   move->captures = captures;
   move->is_en_passant_pawn = false;
   move->is_castling = false;
-  move->promotion = false;
+  move->promotingto = NOPIECE;
 }
 
 // These all functions return no. of moves added
@@ -187,7 +213,7 @@ int addSlidingPieceMovesto(
       int targetcolor = colorofpiece(board->square[index]);
       if(color == targetcolor) break;
       if(( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,index)!=-1 ) &&
-          ( checkPines[0]==-1 || searchIn(checkPines,8,index)!=-1 )) {
+          ( checkPins[0]==-1 || searchIn(checkPins,8,index)!=-1 )) {
         addMovebyPosition(sqr, index, board->square[index]>0 ? index : -1, board, moves + mv);
         mv++;
       }
@@ -219,7 +245,7 @@ int addJumpingPieceMovesto(
     if( 0<=r && r<8 && 0<=c && c<8 && targetcolor!=color &&
         (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,index)!=-1)) {
       if(typeofpiece(movingPiece)!=KING &&
-          !( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 )) continue;
+          !( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) continue;
       if(typeofpiece(movingPiece)==KING && notAllowedin[index]) continue;
       addMovebyPosition(sqr, index, board->square[index]>0 ? index : -1, board,  moves+mv);
       mv++;
@@ -240,17 +266,21 @@ int addPawnMovesto(
   r=row+dir, c=col;
   if(board->square[r*8+c]==0 &&
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 )) {
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     addMovebyPosition(sqr, r*8+c, -1, board, moves+mv);
-    if(r==7 || r==0) moves[mv].promotion = true;
+    if(r==7 || r==0) {
+      moves[mv].promotingto = color | QUEEN;
+    }
     mv++;
   }
 
   // 2 step forward
   r=row+2*dir, c=col;
-  if(row==homerow && board->square[r*8+c]==0 && 
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 )) {
+  int r_mid=row+1*dir;
+  if(row==homerow &&
+      board->square[r*8+c]==NOPIECE && board->square[r_mid*8+c] == NOPIECE &&
+      ( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1 ) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     addMovebyPosition(sqr, r*8+c, -1, board, moves+mv);
     moves[mv].is_en_passant_pawn = true;
     mv++;
@@ -260,25 +290,43 @@ int addPawnMovesto(
   r=row+dir, c=col+1;
   if(0<=c && c<8 && colorofpiece(board->square[r*8+c]) == oppColor && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 )) {
-    addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
-    if(r==7 || r==0) moves[mv].promotion = true;
-    mv++;
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
+    if(r==7 || r==0) {
+      int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
+      for(int i=0; i<4; i++) {
+        addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
+        moves[mv].promotingto = color | possible_promotions[i];
+        mv++;
+      }
+    }
+    else {
+      addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
+      mv++;
+    }
   }
   c=col-1;
   if(0<=c && c<8 && colorofpiece(board->square[r*8+c]) == oppColor && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 )) {
-    addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
-    if(r==7 || r==0) moves[mv].promotion = true;
-    mv++;
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
+    if(r==7 || r==0) {
+      int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
+      for(int i=0; i<4; i++) {
+        addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
+        moves[mv].promotingto = color | possible_promotions[i];
+        mv++;
+      }
+    }
+    else {
+      addMovebyPosition(sqr, r*8+c, r*8+c, board, moves+mv);
+      mv++;
+    }
   }
 
   // en_passant
   r=row+dir, c=col+1;
   if(0<=c && c<8 && board->en_passant_pawn == row*8+c && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 ))
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
@@ -296,7 +344,7 @@ skippedfirst:
   c=col-1;
   if(0<=c && c<8 && board->en_passant_pawn == row*8+c && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPines[0]==-1 || searchIn(checkPines,8,r*8+c)!=-1 ))
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
@@ -375,8 +423,25 @@ int addCastlingMove(
 }
 
 int update_legal_moves(board_t* board, move_t* moves) {
+  // Checking for Draws
+  if(board->halfmove >= 100) {
+    printf("\033[31m\"Draw by 50 move rule\"\033[0m\n");
+    return 0;
+  }
+
   update_pinned_pieces(board->turn, board);
 
+  // printf("\033[31m");
+  // printf("\ncheckPins: ");
+  // for(int i=0; i<8; i++) {
+  //   char square[3];
+  //   indexToName(checkPins[i], square);
+  //   // printf("%s ", square);
+  //   printf("%d ", checkPins[i]);
+  // }
+  // printf("\033[0m");
+
+  int kingSqr=-1;
   int moveNum=0;
   for(int i=0; i<64; i++) {
     int piece = board->square[i];
@@ -386,7 +451,9 @@ int update_legal_moves(board_t* board, move_t* moves) {
       case ROOK  : moveNum += addRookMovesto  (i, color, board, moves+moveNum); break;
       case BISHOP: moveNum += addBishopMovesto(i, color, board, moves+moveNum); break;
       case QUEEN : moveNum += addQueenMovesto (i, color, board, moves+moveNum); break;
-      case KING  : moveNum += addKingMovesto  (i, color, board, moves+moveNum); break;
+      case KING  : moveNum += addKingMovesto  (i, color, board, moves+moveNum);
+                   kingSqr = i;
+                   break;
       case KNIGHT: moveNum += addKnightMovesto(i, color, board, moves+moveNum); break;
       case PAWN  :
              if(color == BLACK) moveNum += addBlackPawnMovesto(i, board, moves+moveNum);
@@ -413,6 +480,13 @@ int update_legal_moves(board_t* board, move_t* moves) {
     moveNum++;
   }
 
+  if(moveNumx==0) {
+    bool enemy_terittory[64];
+    sqrsControlledby(enemy_terittory, oppositecolor(board->turn), board->square);
+    if(enemy_terittory[kingSqr]) printf("\033[31m\"Checkmate\"\033[30m");
+    else printf("\033[31m\"Stalemate\"\033[30m");
+  }
+
   return moveNumx;
 }
 
@@ -424,22 +498,13 @@ move_t getLegalMoveby(int from, int to, board_t* board, move_t* moves) {
   return moves[MOVES_ARR_LEN-1];
 }
 
-int askPromotionPiece() {
-  int piece = QUEEN;
-  printf("Promoting to?(Q,R,B,N) ");
-  char piecesym;
-  while(1) {
-    scanf("%s", &piecesym);
-    piece = piece_sym[piecesym];
-    if(piece == NOPIECE || piece == ' ')
-      printf("Invalid piece!! Enter again: ");
-    else break;
-  }
-  return typeofpiece(piece);
-}
-
 void makeMove(board_t* board, move_t move) {
   if(move.startsqr == -1 || move.targetsqr == -1) return;
+
+  if(typeofpiece(board->square[move.startsqr]) != PAWN && move.captures == -1)
+    board->halfmove++;
+  else board->halfmove=0;
+  if(board->turn==BLACK) board->fullmove++;
 
   delPiecefrom(move.captures, board);
   shiftPiece(move.startsqr, move.targetsqr, board);
@@ -447,8 +512,8 @@ void makeMove(board_t* board, move_t move) {
   if(move.is_en_passant_pawn) setEnPassantPawn(move.targetsqr, board);
   else delEnPassantPawn(board);
 
-  if(move.promotion) {
-    int piece = askPromotionPiece(board);
+  if(move.promotingto!=NOPIECE) {
+    int piece = move.promotingto;
     piece = getTurn(board) | piece;
     setPieceto(piece, move.targetsqr, board);
   }

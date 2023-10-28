@@ -4,8 +4,9 @@
 #include "position.h"
 #include "legalmoves.h"
 
-void drawBoard(board_t* board);
-void printSquares(board_t* board);
+void drawBoard(board_t board);
+void printSquares(board_t board);
 void printLegalMoves(move_t* moves);
+void printFen(board_t board);
 
 #endif // DISPLAY_H

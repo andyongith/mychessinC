@@ -23,6 +23,8 @@ typedef struct {
   uint8_t castle; // bitfield in the format KQkq, for example 1001 means black can castle queen side and white can castle king side only
   int en_passant_pawn;
   char fen[64];
+  int halfmove;
+  int fullmove;
 } board_t;
 
 extern uint8_t piece_sym['z']; // Piece Representations or symbols, can be used for parsing fen and displaying current position

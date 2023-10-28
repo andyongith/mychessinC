@@ -13,6 +13,8 @@ void init_board(board_t* board) {
   board->castle = 0;
   board->en_passant_pawn=-1;
   board->fen[0] = '\0';
+  board->halfmove = 0;
+  board->fullmove = 0;
 }
 
 void initPositionVars(board_t* board) {
@@ -63,6 +65,18 @@ void setPosition(char* fen, board_t* board) {
       case 'q': board->castle |= BLACK_QUEEN_SIDE; break;
     }
   }
+
+  // halfmove
+  while(i<fenlen && (fen[i]==' ' || fen[i]=='-')) i++;
+  int halfmove = fen[i++] - '0';
+  if(fen[i]!=' ') halfmove = halfmove*10 + fen[i++] - '0';
+  board->halfmove = halfmove;
+
+  // fullmove
+  while(i<fenlen && fen[i]==' ') i++;
+  int fullmove = fen[i++] - '0';
+  if(i<fenlen && fen[i]!=' ') fullmove = fullmove*10 + fen[i++] - '0';
+  board->fullmove = fullmove;
 }
 
 void delPiecefrom(int sqr, board_t* board) { board->square[sqr] = NOPIECE; }
