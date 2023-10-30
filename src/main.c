@@ -18,7 +18,20 @@ board_t Board;
 int showNodesNum(board_t board, int depth) {
   move_t moves[MOVES_ARR_LEN];
   int moves_num = update_legal_moves(board, moves);
-  return moves_num;
+
+  if(depth<2) {
+    return moves_num > 0 ? moves_num : 1;
+  }
+  else {
+    int num=0;
+    for(int mv=0; mv<moves_num; mv++) {
+      board_t boardx = makeMove(&board, moves[mv]);
+      num += showNodesNum(boardx, depth-1);
+    }
+    return num;
+  }
+
+  return -1;
 }
 
 int main(int argc, char **argv) {
@@ -37,6 +50,7 @@ int main(int argc, char **argv) {
   char loadingfen[FEN_LEN] = STARTFEN;
   bool noBoard = false;
   bool testing = false;
+  int testdepth = 1;
 
   int argi = 1;
   while(argi<argc && argv[argi][0]=='-') {
@@ -75,6 +89,7 @@ int main(int argc, char **argv) {
       case 't':
         noBoard = true;
         testing = true;
+        testdepth = stringtonum(argv[(argi++)+1]);
         break;
 
       case 'l':
@@ -104,7 +119,7 @@ int main(int argc, char **argv) {
   else if(!noBoard) play_manually(WHITE, Board);
 
   if(testing) {
-    printf("%d\n", showNodesNum(Board, 1));
+    printf("%d\n", showNodesNum(Board, testdepth));
   }
 
   return 0;

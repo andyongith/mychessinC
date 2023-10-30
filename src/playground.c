@@ -34,6 +34,13 @@ void play_randomly(board_t board) {
   }
   printFen(board);
   drawBoard(board);
+  
+  switch(num_of_moves) {
+    case  0: printf("\033[31m\"Checkmate\"\033[30m\n"); break;
+    case -1: printf("\033[31m\"Stalemate\"\033[30m\n"); break;
+    case -2: printf("\033[31m\"Draw by 50 move rule\"\033[30m\n"); break;
+    default: printf("\033[31m\"Something's wrong, and idk what.\"\033[30m\n"); break;
+  }
 }
 
 void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any other number for both

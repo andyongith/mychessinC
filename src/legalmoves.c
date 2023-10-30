@@ -422,23 +422,17 @@ int addCastlingMove(
 }
 
 int update_legal_moves(board_t board, move_t* moves) {
+  // ---Return Values---
+  // > 0 : no of available legal moves
+  // = 0 : Checkmate
+  // =-1 : Stalemate
+  // =-2 : Draw by 50 move rule
+  //
+
   // Checking for Draws
-  if(board.halfmove >= 100) {
-    printf("\033[31m\"Draw by 50 move rule\"\033[0m\n");
-    return 0;
-  }
+  if(board.halfmove >= 100) return -2;
 
   update_pinned_pieces(board.turn, board);
-
-  // printf("\033[31m");
-  // printf("\ncheckPins: ");
-  // for(int i=0; i<8; i++) {
-  //   char squares[3];
-  //   indexToName(checkPins[i], squares);
-  //   // printf("%s ", squares);
-  //   printf("%d ", checkPins[i]);
-  // }
-  // printf("\033[0m");
 
   int kingSqr=-1;
   int moveNum=0;
@@ -479,8 +473,8 @@ int update_legal_moves(board_t board, move_t* moves) {
   if(moveNumx==0) {
     bool enemy_terittory[64];
     sqrsControlledby(enemy_terittory, oppositecolor(board.turn), board.squares);
-    if(enemy_terittory[kingSqr]) printf("\033[31m\"Checkmate\"\033[30m");
-    else printf("\033[31m\"Stalemate\"\033[30m");
+    if(enemy_terittory[kingSqr]) return 0;
+    else return -1;
   }
 
   return moveNumx;
