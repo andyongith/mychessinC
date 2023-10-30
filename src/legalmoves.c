@@ -422,14 +422,14 @@ int addCastlingMove(
   return 1;
 }
 
-int update_legal_moves(board_t* board, move_t* moves) {
+int update_legal_moves(board_t board, move_t* moves) {
   // Checking for Draws
-  if(board->halfmove >= 100) {
+  if(board.halfmove >= 100) {
     printf("\033[31m\"Draw by 50 move rule\"\033[0m\n");
     return 0;
   }
 
-  update_pinned_pieces(board->turn, board);
+  update_pinned_pieces(board.turn, &board);
 
   // printf("\033[31m");
   // printf("\ncheckPins: ");
@@ -444,45 +444,45 @@ int update_legal_moves(board_t* board, move_t* moves) {
   int kingSqr=-1;
   int moveNum=0;
   for(int i=0; i<64; i++) {
-    int piece = board->square[i];
+    int piece = board.square[i];
     int color = colorofpiece(piece);
-    if(color != board->turn) continue;
+    if(color != board.turn) continue;
     switch(typeofpiece(piece)) {
-      case ROOK  : moveNum += addRookMovesto  (i, color, board, moves+moveNum); break;
-      case BISHOP: moveNum += addBishopMovesto(i, color, board, moves+moveNum); break;
-      case QUEEN : moveNum += addQueenMovesto (i, color, board, moves+moveNum); break;
-      case KING  : moveNum += addKingMovesto  (i, color, board, moves+moveNum);
+      case ROOK  : moveNum += addRookMovesto  (i, color, &board, moves+moveNum); break;
+      case BISHOP: moveNum += addBishopMovesto(i, color, &board, moves+moveNum); break;
+      case QUEEN : moveNum += addQueenMovesto (i, color, &board, moves+moveNum); break;
+      case KING  : moveNum += addKingMovesto  (i, color, &board, moves+moveNum);
                    kingSqr = i;
                    break;
-      case KNIGHT: moveNum += addKnightMovesto(i, color, board, moves+moveNum); break;
+      case KNIGHT: moveNum += addKnightMovesto(i, color, &board, moves+moveNum); break;
       case PAWN  :
-             if(color == BLACK) moveNum += addBlackPawnMovesto(i, board, moves+moveNum);
-        else if(color == WHITE) moveNum += addWhitePawnMovesto(i, board, moves+moveNum);
+             if(color == BLACK) moveNum += addBlackPawnMovesto(i, &board, moves+moveNum);
+        else if(color == WHITE) moveNum += addWhitePawnMovesto(i, &board, moves+moveNum);
         break;
     }
   }
 
   // castling
-  switch(board->turn) {
+  switch(board.turn) {
     case WHITE:
-      moveNum += addCastlingMove(4 ,6 ,7 ,WHITE_KING_SIDE ,WHITE, board, moves+moveNum);
-      moveNum += addCastlingMove(4 ,2 ,0 ,WHITE_QUEEN_SIDE,WHITE, board, moves+moveNum);
+      moveNum += addCastlingMove(4 ,6 ,7 ,WHITE_KING_SIDE ,WHITE, &board, moves+moveNum);
+      moveNum += addCastlingMove(4 ,2 ,0 ,WHITE_QUEEN_SIDE,WHITE, &board, moves+moveNum);
       break;
     case BLACK:
-      moveNum += addCastlingMove(60,62,63,BLACK_KING_SIDE ,BLACK, board, moves+moveNum);
-      moveNum += addCastlingMove(60,58,56,BLACK_QUEEN_SIDE,BLACK, board, moves+moveNum);
+      moveNum += addCastlingMove(60,62,63,BLACK_KING_SIDE ,BLACK, &board, moves+moveNum);
+      moveNum += addCastlingMove(60,58,56,BLACK_QUEEN_SIDE,BLACK, &board, moves+moveNum);
       break;
   }
   
   int moveNumx = moveNum;
   while(moveNum<MOVES_ARR_LEN) {
-    addMovebyPosition(-1, -1, -1, board, moves + moveNum);
+    addMovebyPosition(-1, -1, -1, &board, moves + moveNum);
     moveNum++;
   }
 
   if(moveNumx==0) {
     bool enemy_terittory[64];
-    sqrsControlledby(enemy_terittory, oppositecolor(board->turn), board->square);
+    sqrsControlledby(enemy_terittory, oppositecolor(board.turn), board.square);
     if(enemy_terittory[kingSqr]) printf("\033[31m\"Checkmate\"\033[30m");
     else printf("\033[31m\"Stalemate\"\033[30m");
   }

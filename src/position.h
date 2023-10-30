@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define STARTFEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define FEN_LEN 100
 
 enum piece_types {
   NOPIECE=0,
@@ -18,7 +19,7 @@ enum castling_constants {
 };
 
 typedef struct {
-  int square[64];
+  int square[FEN_LEN];
   int turn; // WHITE or BLACK
   uint8_t castle; // bitfield in the format KQkq, for example 1001 means black can castle queen side and white can castle king side only
   int en_passant_pawn;

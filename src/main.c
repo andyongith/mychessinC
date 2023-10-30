@@ -15,11 +15,14 @@ int botmvdelay=1;
 
 board_t Board;
 
-void showNodesNum(board_t board, int depth) {
+int showNodesNum(board_t board, int depth) {
+  move_t moves[MOVES_ARR_LEN];
+  int moves_num = update_legal_moves(board, moves);
+  return moves_num;
 }
 
 int main(int argc, char **argv) {
-  char testFens[30][64];
+  char testFens[30][FEN_LEN];
   strcpy(testFens[ 0], STARTFEN);
 
   int feni=0;
@@ -31,8 +34,9 @@ int main(int argc, char **argv) {
 
   initPositionVars(&Board);
 
-  char loadingfen[64] = STARTFEN;
+  char loadingfen[FEN_LEN] = STARTFEN;
   bool noBoard = false;
+  bool testing = false;
 
   int argi = 1;
   while(argi<argc && argv[argi][0]=='-') {
@@ -69,9 +73,8 @@ int main(int argc, char **argv) {
         break;
 
       case 't':
-        printf("\"-t\" option is for testing purposes only.\n");
         noBoard = true;
-        return 2;
+        testing = true;
         break;
 
       case 'l':
@@ -99,6 +102,10 @@ int main(int argc, char **argv) {
     else if(strcmp(argv[argi], "random")==0) play_randomly(Board);
   }
   else if(!noBoard) play_manually(WHITE, Board);
+
+  if(testing) {
+    printf("%d\n", showNodesNum(Board, 1));
+  }
 
   return 0;
 }

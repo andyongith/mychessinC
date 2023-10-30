@@ -11,7 +11,7 @@
 
 void play_randomly(board_t board) {
   move_t valid_moves[MOVES_ARR_LEN];
-  int num_of_moves = update_legal_moves(&board, valid_moves);
+  int num_of_moves = update_legal_moves(board, valid_moves);
 
   while(num_of_moves>0) {
     printFen(board);
@@ -29,7 +29,7 @@ void play_randomly(board_t board) {
     printf("\nbot played: %s %s\n", from, to);
     makeMove(&board, move);
 
-    num_of_moves = update_legal_moves(&board, valid_moves);
+    num_of_moves = update_legal_moves(board, valid_moves);
     // sleep(botmvdelay);
   }
   printFen(board);
@@ -38,7 +38,7 @@ void play_randomly(board_t board) {
 
 void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any other number for both
   move_t valid_moves[MOVES_ARR_LEN];
-  int num_of_moves = update_legal_moves(&board, valid_moves);
+  int num_of_moves = update_legal_moves(board, valid_moves);
 
   while(num_of_moves>0) {
     printFen(board);
@@ -81,7 +81,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
       }
     }
 
-    num_of_moves = update_legal_moves(&board, valid_moves);
+    num_of_moves = update_legal_moves(board, valid_moves);
     printf("\n");
   }
   printFen(board);

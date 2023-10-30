@@ -62,7 +62,7 @@ void printLegalMoves(move_t* moves) {
 }
 
 void printFen(board_t board) {
-  char fen[100];
+  char fen[FEN_LEN];
   int i=0;
 
   int letters1[] = {'k','p','n','b','r','q'};
