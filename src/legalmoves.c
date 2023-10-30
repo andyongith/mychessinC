@@ -99,7 +99,7 @@ void update_pinned_pieces(int color, board_t board) {
   }
   for(int i=0; i<8; i++) checkPins[i]=-1;
 
-  int* squares = board.square;
+  int* squares = board.squares;
   int kingPos = searchIn(squares, 64, color | KING);
   int row=kingPos/8, col=kingPos%8;
 
@@ -200,7 +200,7 @@ int addSlidingPieceMovesto(
     int sqr, int (*offsets)[2], int offsetsLen, board_t board, move_t* moves ) {
   int mv=0;
   int row=sqr/8, col=sqr%8;
-  int piece = board.square[sqr];
+  int piece = board.squares[sqr];
   int color = colorofpiece(piece);
   int oppColor = oppositecolor(color);
 
@@ -210,11 +210,11 @@ int addSlidingPieceMovesto(
         r+=offsets[i][0], c+=offsets[i][1] )
     {
       int index = r*8 + c;
-      int targetcolor = colorofpiece(board.square[index]);
+      int targetcolor = colorofpiece(board.squares[index]);
       if(color == targetcolor) break;
       if(( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,index)!=-1 ) &&
           ( checkPins[0]==-1 || searchIn(checkPins,8,index)!=-1 )) {
-        addMovebyPosition(sqr, index, board.square[index]>0 ? index : -1, moves + mv);
+        addMovebyPosition(sqr, index, board.squares[index]>0 ? index : -1, moves + mv);
         mv++;
       }
       if(oppColor == targetcolor) break;
@@ -228,28 +228,27 @@ int addJumpingPieceMovesto(
     int sqr, int (*offsets)[2], int offsetsLen, board_t board, move_t* moves ) {
   int mv=0;
   int row=sqr/8, col=sqr%8;
-  int piece = board.square[sqr];
-  int color = colorofpiece(piece);
+  int movingPiece = board.squares[sqr];
+  int color = colorofpiece(movingPiece);
   int oppColor = oppositecolor(color);
-  int movingPiece = board.square[sqr];
 
   bool notAllowedin[64];
   if(typeofpiece(movingPiece) == KING) {
-    delPiecefrom(sqr, &board);
-    sqrsControlledby(notAllowedin, oppColor, board.square);
-    setPieceto(movingPiece, sqr, &board);
+    board.squares[sqr] = NOPIECE;
+    sqrsControlledby(notAllowedin, oppColor, board.squares);
+    board.squares[sqr] = movingPiece;
   }
 
   for(int i=0; i<offsetsLen; i++) {
     int r=row+offsets[i][0], c=col+offsets[i][1];
     int index = r*8 + c;
-    int targetcolor = colorofpiece(board.square[index]);
+    int targetcolor = colorofpiece(board.squares[index]);
     if( 0<=r && r<8 && 0<=c && c<8 && targetcolor!=color &&
         (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,index)!=-1)) {
       if(typeofpiece(movingPiece)!=KING &&
           !( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) continue;
       if(typeofpiece(movingPiece)==KING && notAllowedin[index]) continue;
-      addMovebyPosition(sqr, index, board.square[index]>0 ? index : -1, moves+mv);
+      addMovebyPosition(sqr, index, board.squares[index]>0 ? index : -1, moves+mv);
       mv++;
     }
   }
@@ -258,8 +257,7 @@ int addJumpingPieceMovesto(
 }
 
 int addPawnMovesto(int sqr, board_t board, move_t* moves ){
-  // dir = 1 for white and -1 for black
-  int piece = board.square[sqr];
+  int piece = board.squares[sqr];
   int color = colorofpiece(piece);
   int oppColor = oppositecolor(color);
   int dir = 1, homerow = 1;
@@ -273,7 +271,7 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
   int r,c;
   // 1 step forward
   r=row+dir, c=col;
-  if(board.square[r*8+c]==0 &&
+  if(board.squares[r*8+c]==0 &&
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     addMovebyPosition(sqr, r*8+c, -1, moves+mv);
@@ -287,7 +285,7 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
   r=row+2*dir, c=col;
   int r_mid=row+1*dir;
   if(row==homerow &&
-      board.square[r*8+c]==NOPIECE && board.square[r_mid*8+c] == NOPIECE &&
+      board.squares[r*8+c]==NOPIECE && board.squares[r_mid*8+c] == NOPIECE &&
       ( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1 ) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     addMovebyPosition(sqr, r*8+c, -1, moves+mv);
@@ -297,7 +295,7 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
 
   // captures
   r=row+dir, c=col+1;
-  if(0<=c && c<8 && colorofpiece(board.square[r*8+c]) == oppColor && 
+  if(0<=c && c<8 && colorofpiece(board.squares[r*8+c]) == oppColor && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     if(r==7 || r==0) {
@@ -314,7 +312,7 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
     }
   }
   c=col-1;
-  if(0<=c && c<8 && colorofpiece(board.square[r*8+c]) == oppColor && 
+  if(0<=c && c<8 && colorofpiece(board.squares[r*8+c]) == oppColor && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     if(r==7 || r==0) {
@@ -339,9 +337,9 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
-      leftPiece = board.square[row*8+i];
+      leftPiece = board.squares[row*8+i];
     for(int i=col+2; i<8 && rightPiece==NOPIECE; i++)
-      rightPiece = board.square[row*8+i];
+      rightPiece = board.squares[row*8+i];
 
     if(leftPiece==(color|KING) && (rightPiece==(oppColor|ROOK) || rightPiece==(oppColor|QUEEN))) goto skippedfirst;
     if(rightPiece==(color|KING) && (leftPiece==(oppColor|ROOK) || leftPiece==(oppColor|QUEEN))) goto skippedfirst;
@@ -357,9 +355,9 @@ skippedfirst:
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
-      leftPiece = board.square[row*8+i];
+      leftPiece = board.squares[row*8+i];
     for(int i=col+2; i<8 && rightPiece==NOPIECE; i++)
-      rightPiece = board.square[row*8+i];
+      rightPiece = board.squares[row*8+i];
 
     if(leftPiece==(color|KING) && (rightPiece==(oppColor|ROOK) || rightPiece==(oppColor|QUEEN))) goto skippedsecond;
     if(rightPiece==(color|KING) && (leftPiece==(oppColor|ROOK) || leftPiece==(oppColor|QUEEN))) goto skippedsecond;
@@ -398,23 +396,23 @@ int addKnightMovesto(int sqr, board_t board, move_t* moves) {
 
 int addCastlingMove(
     int kingfrom, int kingto, int rooksqr, int identity, int color,
-    board_t* board, move_t* moves ) {
-  if( (board->castle & identity) != identity ) return 0;
+    board_t board, move_t* moves ) {
+  if( (board.castle & identity) != identity ) return 0;
 
   bool notAllowedin[64];
-  delPiecefrom(kingfrom, board);
-  sqrsControlledby(notAllowedin, oppositecolor(color), board->square);
-  setPieceto(color | KING, kingfrom, board);
+  board.squares[kingfrom] = NOPIECE;
+  sqrsControlledby(notAllowedin, oppositecolor(color), board.squares);
+  board.squares[kingfrom] = color | KING;
 
   if(notAllowedin[kingfrom]) return 0;
   if(kingfrom<rooksqr) {
     for(int i=kingfrom+1; i<rooksqr; i++)
-      if(board->square[i] != NOPIECE) return 0;
+      if(board.squares[i] != NOPIECE) return 0;
     if(notAllowedin[kingfrom+1] || notAllowedin[kingfrom+2]) return 0;
   }
   else {
     for(int i=kingfrom-1; i>rooksqr; i--)
-      if(board->square[i] != NOPIECE) return 0;
+      if(board.squares[i] != NOPIECE) return 0;
     if(notAllowedin[kingfrom-1] || notAllowedin[kingfrom-2]) return 0;
   }
 
@@ -435,9 +433,9 @@ int update_legal_moves(board_t board, move_t* moves) {
   // printf("\033[31m");
   // printf("\ncheckPins: ");
   // for(int i=0; i<8; i++) {
-  //   char square[3];
-  //   indexToName(checkPins[i], square);
-  //   // printf("%s ", square);
+  //   char squares[3];
+  //   indexToName(checkPins[i], squares);
+  //   // printf("%s ", squares);
   //   printf("%d ", checkPins[i]);
   // }
   // printf("\033[0m");
@@ -445,7 +443,7 @@ int update_legal_moves(board_t board, move_t* moves) {
   int kingSqr=-1;
   int moveNum=0;
   for(int i=0; i<64; i++) {
-    int piece = board.square[i];
+    int piece = board.squares[i];
     int color = colorofpiece(piece);
     if(color != board.turn) continue;
     switch(typeofpiece(piece)) {
@@ -463,12 +461,12 @@ int update_legal_moves(board_t board, move_t* moves) {
   // castling
   switch(board.turn) {
     case WHITE:
-      moveNum += addCastlingMove(4 ,6 ,7 ,WHITE_KING_SIDE ,WHITE, &board, moves+moveNum);
-      moveNum += addCastlingMove(4 ,2 ,0 ,WHITE_QUEEN_SIDE,WHITE, &board, moves+moveNum);
+      moveNum += addCastlingMove(4 ,6 ,7 ,WHITE_KING_SIDE ,WHITE, board, moves+moveNum);
+      moveNum += addCastlingMove(4 ,2 ,0 ,WHITE_QUEEN_SIDE,WHITE, board, moves+moveNum);
       break;
     case BLACK:
-      moveNum += addCastlingMove(60,62,63,BLACK_KING_SIDE ,BLACK, &board, moves+moveNum);
-      moveNum += addCastlingMove(60,58,56,BLACK_QUEEN_SIDE,BLACK, &board, moves+moveNum);
+      moveNum += addCastlingMove(60,62,63,BLACK_KING_SIDE ,BLACK, board, moves+moveNum);
+      moveNum += addCastlingMove(60,58,56,BLACK_QUEEN_SIDE,BLACK, board, moves+moveNum);
       break;
   }
   
@@ -480,7 +478,7 @@ int update_legal_moves(board_t board, move_t* moves) {
 
   if(moveNumx==0) {
     bool enemy_terittory[64];
-    sqrsControlledby(enemy_terittory, oppositecolor(board.turn), board.square);
+    sqrsControlledby(enemy_terittory, oppositecolor(board.turn), board.squares);
     if(enemy_terittory[kingSqr]) printf("\033[31m\"Checkmate\"\033[30m");
     else printf("\033[31m\"Stalemate\"\033[30m");
   }
@@ -496,49 +494,54 @@ move_t getLegalMoveby(int from, int to, move_t* moves) {
   return moves[MOVES_ARR_LEN-1];
 }
 
-void makeMove(board_t* board, move_t move) {
-  if(move.startsqr == -1 || move.targetsqr == -1) return;
+board_t makeMove(board_t* boardx, move_t move) {
+  board_t board = *boardx; // I know, I know, This looks weird but
+                           // Idk why this is causing an error when
+                           // I just directly try to use "board_t baord"
+                           // parameter instead of "board_t* boardx"
+  if(move.startsqr == -1 || move.targetsqr == -1) return board;
 
-  if(typeofpiece(board->square[move.startsqr]) != PAWN && move.captures == -1)
-    board->halfmove++;
-  else board->halfmove=0;
-  if(board->turn==BLACK) board->fullmove++;
+  if(typeofpiece(board.squares[move.startsqr]) != PAWN && move.captures == -1)
+    board.halfmove++;
+  else board.halfmove=0;
+  if(board.turn==BLACK) board.fullmove++;
 
-  delPiecefrom(move.captures, board);
-  shiftPiece(move.startsqr, move.targetsqr, board);
+  board.squares[move.captures] = NOPIECE;
+  shiftPiece(move.startsqr, move.targetsqr, &board);
 
-  if(move.is_en_passant_pawn) setEnPassantPawn(move.targetsqr, board);
-  else delEnPassantPawn(board);
+  if(move.is_en_passant_pawn) setEnPassantPawn(move.targetsqr, &board);
+  else delEnPassantPawn(&board);
 
   if(move.promotingto!=NOPIECE) {
     int piece = move.promotingto;
-    piece = getTurn(board) | piece;
-    setPieceto(piece, move.targetsqr, board);
+    piece = board.turn | piece;
+    board.squares[move.targetsqr] = piece;
   }
 
   if(move.is_castling) {
     switch(move.targetsqr) {
-      case 6 : shiftPiece(7 ,5 , board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, board); break;
-      case 2 : shiftPiece(0 ,3 , board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, board); break;
-      case 62: shiftPiece(63,61, board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, board); break;
-      case 58: shiftPiece(56,59, board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, board); break;
+      case 6 : shiftPiece(7 ,5 , &board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
+      case 2 : shiftPiece(0 ,3 , &board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
+      case 62: shiftPiece(63,61, &board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
+      case 58: shiftPiece(56,59, &board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
     }
   } else {
     switch(move.startsqr) {
-      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, board); break;
-      case 4 : delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, board); break;
-      case 7 : delCastleAbility(WHITE_KING_SIDE, board); break;
-      case 56: delCastleAbility(BLACK_QUEEN_SIDE, board); break;
-      case 60: delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, board); break;
-      case 63: delCastleAbility(BLACK_KING_SIDE, board); break;
+      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, &board); break;
+      case 4 : delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
+      case 7 : delCastleAbility(WHITE_KING_SIDE , &board); break;
+      case 56: delCastleAbility(BLACK_QUEEN_SIDE, &board); break;
+      case 60: delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
+      case 63: delCastleAbility(BLACK_KING_SIDE , &board); break;
     }
     switch(move.targetsqr) {
-      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, board); break;
-      case 4 : delCastleAbility(WHITE_KING_SIDE , board); break;
-      case 56: delCastleAbility(BLACK_QUEEN_SIDE, board); break;
-      case 63: delCastleAbility(BLACK_KING_SIDE , board); break;
+      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, &board); break;
+      case 4 : delCastleAbility(WHITE_KING_SIDE , &board); break;
+      case 56: delCastleAbility(BLACK_QUEEN_SIDE, &board); break;
+      case 63: delCastleAbility(BLACK_KING_SIDE , &board); break;
     }
   }
 
-  switchTurn(board);
+  switchTurn(&board);
+  return board;
 }

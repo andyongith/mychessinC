@@ -27,7 +27,7 @@ void play_randomly(board_t board) {
     indexToName(move.startsqr, from);
     indexToName(move.targetsqr, to);
     printf("\nbot played: %s %s\n", from, to);
-    makeMove(&board, move);
+    board = makeMove(&board, move);
 
     num_of_moves = update_legal_moves(board, valid_moves);
     // sleep(botmvdelay);
@@ -57,7 +57,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
       indexToName(move.startsqr, from);
       indexToName(move.targetsqr, to);
       printf("\nbot played: %s %s", from, to);
-      makeMove(&board, move);
+      board = makeMove(&board, move);
     }
     
     else {
@@ -75,7 +75,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
           printf("Invalid move!! Enter again: ");
         }
         else {
-          makeMove(&board, move);
+          board = makeMove(&board, move);
           break;
         }
       }

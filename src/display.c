@@ -22,7 +22,7 @@ void drawBoard(board_t board) {
       printf("%s%d |", BORDERCOLOR, row+1);
     }
 
-    int piece = board.square[row*8 + col];
+    int piece = board.squares[row*8 + col];
 
     printf("%s", piece & WHITE ? WHITECOLOR : BLACKCOLOR);
     printf(" %c ", (char) piece_sym[piece]);
@@ -41,7 +41,7 @@ void drawBoard(board_t board) {
 // Only For debugging(will remove it later)(don't forget to also remove from header)
 void printSquares(board_t board) {
   for(int i=0; i<64; i++) {
-    printf("%c,", piece_sym[board.square[i]]);
+    printf("%c,", piece_sym[board.squares[i]]);
   }
 }
 
@@ -72,7 +72,7 @@ void printFen(board_t board) {
     int skipped=0;
     for(int c=0; c < 8; c++) {
       int index = r*8 + c;
-      int piece = board.square[index];
+      int piece = board.squares[index];
       
       if(piece == NOPIECE) {
         skipped++;
@@ -119,6 +119,7 @@ void printFen(board_t board) {
   }
   // fen is incomplete here but we don't need to complete it
 
+end:
   fen[i] = '\0';
   printf("FEN: %s - %d %d\n", fen, board.halfmove, board.fullmove);
 }

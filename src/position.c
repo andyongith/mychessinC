@@ -8,7 +8,7 @@
 uint8_t piece_sym['z']; // Piece Representations
 
 void init_board(board_t* board) {
-  for(int i=0; i<64; i++) board->square[i] = NOPIECE;
+  for(int i=0; i<64; i++) board->squares[i] = NOPIECE;
   board->turn = WHITE;
   board->castle = 0;
   board->en_passant_pawn=-1;
@@ -44,9 +44,9 @@ void setPosition(char* fen, board_t* board) {
     if(fen[i]=='/') { row--; col=0; }
     else if( '0'<=fen[i] && fen[i]<='9' ) {
       int skipcol = (int) (fen[i]-'0');
-      while(skipcol--) { board->square[row*8 + col]=0; col++; }
+      while(skipcol--) { board->squares[row*8 + col]=0; col++; }
     }
-    else { board->square[row*8 + col] = piece_sym[fen[i]]; col++; }
+    else { board->squares[row*8 + col] = piece_sym[fen[i]]; col++; }
     i++;
   }
   while(i<fenlen && fen[i]==' ') i++;
@@ -79,12 +79,10 @@ void setPosition(char* fen, board_t* board) {
   board->fullmove = fullmove;
 }
 
-void delPiecefrom(int sqr, board_t* board) { board->square[sqr] = NOPIECE; }
 void shiftPiece(int from, int to, board_t* board) {
-  board->square[to] = board->square[from];
-  board->square[from] = NOPIECE;
+  board->squares[to] = board->squares[from];
+  board->squares[from] = NOPIECE;
 }
-void setPieceto(int piece, int sqr, board_t* board) { board->square[sqr] = piece; }
 void switchTurn(board_t* board) { board->turn = board->turn == WHITE ? BLACK : WHITE; }
 int  getTurn(board_t* board) { return board->turn; }
 void setEnPassantPawn(int sqr, board_t* board) { board->en_passant_pawn = sqr; }

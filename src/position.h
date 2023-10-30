@@ -19,7 +19,7 @@ enum castling_constants {
 };
 
 typedef struct {
-  int square[FEN_LEN];
+  int squares[FEN_LEN];
   int turn; // WHITE or BLACK
   uint8_t castle; // bitfield in the format KQkq, for example 1001 means black can castle queen side and white can castle king side only
   int en_passant_pawn;
@@ -34,11 +34,8 @@ void init_board(board_t* board);
 void initPositionVars(board_t* board);
 
 void setPosition(char* fen, board_t* board);
-void delPiecefrom(int sqr, board_t* board);
 void shiftPiece(int from, int to, board_t* board);
-void setPieceto(int piece, int sqr, board_t* board);
 void switchTurn(board_t* board);
-int  getTurn(board_t* board);
 void setEnPassantPawn(int sqr, board_t* board);
 void delEnPassantPawn(board_t* board);
 void delCastleAbility(int identity, board_t* board);
