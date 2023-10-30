@@ -64,7 +64,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
       printf("Enter your move: ");
       while(1) {
         scanf("%s %s", from, to);
-        move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &board, valid_moves);
+        move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), valid_moves);
 
         if(move.promotingto!=NOPIECE) { // --- needs attention
           int promotionPiece = askPromotionPiece();

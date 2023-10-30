@@ -29,7 +29,7 @@ test_fen() {
   fi
 }
 
-echo "Index) [engine output] : [your output] => result"
+# echo "Index) [engine output] : [your output] => result"
 if [[ -n $2 ]]; then
   test_fen "$2"
 else

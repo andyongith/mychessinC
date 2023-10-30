@@ -13,7 +13,7 @@ typedef struct{
 } move_t;
 
 int update_legal_moves(board_t board, move_t* moves);
-move_t getLegalMoveby(int from, int to, board_t* board, move_t* moves);
+move_t getLegalMoveby(int from, int to, move_t* moves);
 void makeMove(board_t* board, move_t move);
 
 #endif // LEGAL_MOVES_H
