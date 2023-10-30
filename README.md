@@ -31,10 +31,10 @@ Enter your move:
 ## Why?
 * For fun
 * I just learned C and wanted to build some project in it to learn more
-* Also I like playing chess, _here's [my chess.com profile](https://chess.com/member/andy_on_chess) if you're interested
+* Also I like playing chess, here's [my chess.com profile](https://chess.com/member/andy_on_chess) if you're interested
 
 ## How?(for users)
-First compile it the using command
+First compile it using the command
 ```
 make
 ```
@@ -58,7 +58,7 @@ if you ommit the _side_ it'll assume you're playing as white
  You can use this option to set up your desired fen(or should I say position). However in place of _<your_fen>_ you can also use
   * **startfen** for starting position
   * **testfen <index>** for _testFen[index]_
-  * **lasttestfen** for _testFen[last index]_  
+  * **ltestfen** for _testFen[last index]_  
  ##### example
  ```
 $ ./start -f "8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45"
@@ -100,12 +100,13 @@ Just fork it and do whatever you want
 
 ## To-do
 #### [Issues]
-* Knight moves are not added in testFen[1] i.e in fen _"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBP PP/R3K2R w KQkq -"_;
+* Knight(on e5) moves are not added in testFen[1] i.e in fen _"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBP PP/R3K2R w KQkq -"_;
 #### [Features]
 * Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board
 * Make a better help(-h option) prompt
 * Make a better README
+* Add a bash script that can test our program
 
 ## What to do if you don't appreciate my work
 * Fuck off

@@ -8,17 +8,12 @@
 #include "position.h"
 #include "display.h"
 #include "legalmoves.h"
+#include "playground.h"
 
 int showlegals=0;
 int botmvdelay=1;
 
 board_t Board;
-move_t valid_moves[MOVES_ARR_LEN];
-
-void play_randomly();
-void play_manually(int side);
-
-int askPromotionPiece();
 
 void showNodesNum(board_t board, int depth) {
 }
@@ -98,103 +93,12 @@ int main(int argc, char **argv) {
 
   srand(time(NULL));
   if(!noBoard && argi < argc) {
-         if(strcmp(argv[argi], "white" )==0) play_manually(WHITE);
-    else if(strcmp(argv[argi], "black" )==0) play_manually(BLACK);
-    else if(strcmp(argv[argi], "both"  )==0) play_manually(0);
-    else if(strcmp(argv[argi], "random")==0) play_randomly();
+         if(strcmp(argv[argi], "white" )==0) play_manually(WHITE, Board);
+    else if(strcmp(argv[argi], "black" )==0) play_manually(BLACK, Board);
+    else if(strcmp(argv[argi], "both"  )==0) play_manually(0, Board);
+    else if(strcmp(argv[argi], "random")==0) play_randomly(Board);
   }
-  else if(!noBoard) play_manually(WHITE);
+  else if(!noBoard) play_manually(WHITE, Board);
 
   return 0;
-}
-
-void play_randomly() {
-  int num_of_moves = update_legal_moves(&Board, valid_moves);
-
-  while(num_of_moves>0) {
-    printFen(Board);
-    drawBoard(Board);
-    printf("num_of_available_moves: %d\n", num_of_moves);
-    if(showlegals) printLegalMoves(valid_moves);
-    
-    sleep(botmvdelay);
-    char from[3], to[3];
-    int moveIndex = rand() % num_of_moves;
-    // printf("(%d) ", moveIndex);
-    move_t move = valid_moves[moveIndex];
-    indexToName(move.startsqr, from);
-    indexToName(move.targetsqr, to);
-    printf("\nbot played: %s %s\n", from, to);
-    makeMove(&Board, move);
-
-    num_of_moves = update_legal_moves(&Board, valid_moves);
-    // sleep(botmvdelay);
-  }
-  printFen(Board);
-  drawBoard(Board);
-}
-
-void play_manually(int side) { // side can be WHITE, BLACK or any other number for both
-  int num_of_moves = update_legal_moves(&Board, valid_moves);
-
-  while(num_of_moves>0) {
-    printFen(Board);
-    drawBoard(Board);
-    printf("num_of_available_moves: %d\n", num_of_moves);
-    if(showlegals) printLegalMoves(valid_moves);
-    
-    char from[3], to[3];
-
-    if(( side==WHITE && Board.turn==BLACK ) ||
-        ( side==BLACK && Board.turn==WHITE )) {
-      sleep(botmvdelay);
-      int moveIndex = rand() % num_of_moves;
-      // printf("(%d) ", moveIndex);
-      move_t move = valid_moves[moveIndex];
-      indexToName(move.startsqr, from);
-      indexToName(move.targetsqr, to);
-      printf("\nbot played: %s %s", from, to);
-      makeMove(&Board, move);
-    }
-    
-    else {
-      printf("Enter your move: ");
-      while(1) {
-        scanf("%s %s", from, to);
-        move_t move = getLegalMoveby(nameToIndex(from), nameToIndex(to), &Board, valid_moves);
-
-        if(move.promotingto!=NOPIECE) { // --- needs attention
-          int promotionPiece = askPromotionPiece();
-          move.promotingto = promotionPiece;
-        }
-        if(move.startsqr==-1) {
-          printLegalMoves(valid_moves);
-          printf("Invalid move!! Enter again: ");
-        }
-        else {
-          makeMove(&Board, move);
-          break;
-        }
-      }
-    }
-
-    num_of_moves = update_legal_moves(&Board, valid_moves);
-    printf("\n");
-  }
-  printFen(Board);
-  drawBoard(Board);
-}
-
-int askPromotionPiece() {
-  int piece = QUEEN;
-  printf("Promoting to?(Q,R,B,N) ");
-  char piecesym;
-  while(1) {
-    scanf("%s", &piecesym);
-    piece = piece_sym[piecesym];
-    if(piece == NOPIECE || piece == ' ')
-      printf("Invalid piece!! Enter again: ");
-    else break;
-  }
-  return typeofpiece(piece);
 }
