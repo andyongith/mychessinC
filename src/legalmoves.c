@@ -6,82 +6,80 @@
 #include "miscfunctions.h"
 #include "legalmoves.h"
 
-void sqrsCtrlbySlidingPc(
-    bool out_data[64], int index, int (*dir)[2], int len, int in_squares[64] ) {
-  int row=index/8, col=index%8;
+void sqrsCtrlbySlidingPc(bool out_data[64], int sqr, int (*offsets)[2], int offsetsLen, int squares[64] ) {
+  int row=sqr/8, col=sqr%8;
 
-  for(int i=0; i<len; i++) {
-    for( int r=row+dir[i][0], c=col+dir[i][1];
+  for(int i=0; i<offsetsLen; i++) {
+    for( int r=row+offsets[i][0], c=col+offsets[i][1];
         0<=r && r<8 && 0<=c && c<8;
-        r+=dir[i][0], c+=dir[i][1] )
+        r+=offsets[i][0], c+=offsets[i][1] )
     {
-      int targetindex = r*8 + c;
-      out_data[targetindex] = true;
-      if(in_squares[targetindex] != NOPIECE) break;
+      int targetSqr = r*8 + c;
+      out_data[targetSqr] = true;
+      if(squares[targetSqr] != NOPIECE) break;
     }
   }
 }
 
-void sqrsCtrlbyJumpingPc(
-    bool out_data[64], int index, int (*dir)[2], int len, int in_squares[64] ) {
-  int row=index/8, col=index%8;
+void sqrsCtrlbyJumpingPc(bool out_data[64], int sqr, int (*offsets)[2], int offsetsLen, int squares[64] ) {
+  int row=sqr/8, col=sqr%8;
 
-  for(int i=0; i<len; i++) {
-    int r=row+dir[i][0], c=col+dir[i][1];
-    int targetindex = r*8 + c;
+  for(int i=0; i<offsetsLen; i++) {
+    int r=row+offsets[i][0], c=col+offsets[i][1];
+    int targetSqr = r*8 + c;
     if(!( 0<=r && r<8 && 0<=c && c<8 )) continue;
-    out_data[targetindex] = true;
+    out_data[targetSqr] = true;
   }
 }
 
 // Sliding Pieces
-void sqrsControlledbyRook(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyRook(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
-  sqrsCtrlbySlidingPc(out_data, index, dirOffset, 4, in_squares);
+  sqrsCtrlbySlidingPc(out_data, sqr, dirOffset, 4, squares);
 }
-void sqrsControlledbyBishop(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyBishop(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[4][2] = {{-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  sqrsCtrlbySlidingPc(out_data, index, dirOffset, 4, in_squares);
+  sqrsCtrlbySlidingPc(out_data, sqr, dirOffset, 4, squares);
 }
-void sqrsControlledbyQueen(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyQueen(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  sqrsCtrlbySlidingPc(out_data, index, dirOffset, 8, in_squares);
+  sqrsCtrlbySlidingPc(out_data, sqr, dirOffset, 8, squares);
 }
 
 // Jumping Pieces
-void sqrsControlledbyKing(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyKing(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  sqrsCtrlbyJumpingPc(out_data, index, dirOffset, 8, in_squares);
+  sqrsCtrlbyJumpingPc(out_data, sqr, dirOffset, 8, squares);
 }
-void sqrsControlledbyKnight(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyKnight(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[8][2] = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
-  sqrsCtrlbyJumpingPc(out_data, index, dirOffset, 8, in_squares);
+  sqrsCtrlbyJumpingPc(out_data, sqr, dirOffset, 8, squares);
 }
 
 // Pawns
-void sqrsControlledbyWhitePawn(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyWhitePawn(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[2][2] = {{1,-1}, {1,1}};
-  sqrsCtrlbyJumpingPc(out_data, index, dirOffset, 2, in_squares);
+  sqrsCtrlbyJumpingPc(out_data, sqr, dirOffset, 2, squares);
 }
-void sqrsControlledbyBlackPawn(bool out_data[64], int index, int in_squares[64]) {
+void sqrsControlledbyBlackPawn(bool out_data[64], int sqr, int squares[64]) {
   int dirOffset[2][2] = {{-1,-1}, {-1,1}};
-  sqrsCtrlbyJumpingPc(out_data, index, dirOffset, 2, in_squares);
+  sqrsCtrlbyJumpingPc(out_data, sqr, dirOffset, 2, squares);
 }
 
-void sqrsControlledby(bool out_data[64], int color, int in_squares[64]) {
+void sqrsControlledby(bool out_data[64], int color, int squares[64]) {
   for(int i=0; i<64; i++) out_data[i]=0;
   for(int i=0; i<64; i++) {
-    int piece = in_squares[i];
+    int piece = squares[i];
     if(colorofpiece(piece) != color) continue;
     switch(typeofpiece(piece)) {
-      case ROOK  : sqrsControlledbyRook  (out_data, i, in_squares); break;
-      case BISHOP: sqrsControlledbyBishop(out_data, i, in_squares); break;
-      case QUEEN : sqrsControlledbyQueen (out_data, i, in_squares); break;
-      case KING  : sqrsControlledbyKing  (out_data, i, in_squares); break;
-      case KNIGHT: sqrsControlledbyKnight(out_data, i, in_squares); break;
+      case ROOK  : sqrsControlledbyRook  (out_data, i, squares); break;
+      case BISHOP: sqrsControlledbyBishop(out_data, i, squares); break;
+      case QUEEN : sqrsControlledbyQueen (out_data, i, squares); break;
+      case KING  : sqrsControlledbyKing  (out_data, i, squares); break;
+      case KNIGHT: sqrsControlledbyKnight(out_data, i, squares); break;
       case PAWN  :
-             if(color == BLACK) sqrsControlledbyBlackPawn(out_data, i, in_squares);
-        else if(color == WHITE) sqrsControlledbyWhitePawn(out_data, i, in_squares);
+             if(color == BLACK) sqrsControlledbyBlackPawn(out_data, i, squares);
+        else if(color == WHITE) sqrsControlledbyWhitePawn(out_data, i, squares);
         break;
     }
   }
