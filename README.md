@@ -100,14 +100,12 @@ Just fork it and do whatever you want
 
 ## To-do
 #### [Issues]
-* Knight(on e5) moves are not added in testFen[1] i.e in fen _"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBP PP/R3K2R w KQkq -"_;
-* fix issue in printFen function
+* Some moves are missing in last testFen with depth 3, fix it.
 #### [Features]
 * Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board
 * Make a better help(-h option) prompt
 * Make a better README
-* Add a bash script that can test our program
 
 ## What to do if you don't appreciate my work
 * Fuck off
