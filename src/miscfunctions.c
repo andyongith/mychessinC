@@ -41,10 +41,11 @@ int searchIn(int array[], int len, int target) {
 
 int stringtonum(char *string) {
   int digits = strlen(string);
-  int num = 0;
-  for(int i=0; i<digits; i++) {
+  int num=0, i=0;
+  if(string[0]=='-') i=1;
+  while(i<digits) {
     num *= 10;
-    num += string[i] - '0';
+    num += string[i++] - '0';
   }
   return num;
 }

@@ -9,7 +9,7 @@ start: main.o position.o display.o legalmoves.o miscfunctions.o playground.o
 main.o: $(SRC)/main.c $(SRC)/position.h $(SRC)/legalmoves.h $(SRC)/display.h $(SRC)/playground.h $(SRC)/miscfunctions.h
 	$(CC) $(CFLAGS) $(SRC)/main.c -c
 
-position.o: $(SRC)/position.c $(SRC)/position.h
+position.o: $(SRC)/position.c $(SRC)/position.h $(SRC)/miscfunctions.h
 	$(CC) $(CFLAGS) $(SRC)/position.c -c
 
 legalmoves.o: $(SRC)/legalmoves.c $(SRC)/legalmoves.h $(SRC)/position.h

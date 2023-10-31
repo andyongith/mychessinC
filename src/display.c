@@ -117,9 +117,15 @@ void printFen(board_t board) {
     if(board.castle & BLACK_KING_SIDE ) fen[i++] = 'k';
     if(board.castle & BLACK_QUEEN_SIDE) fen[i++] = 'q';
   }
+
+  fen[i++] = ' ';
+  if(board.en_passant_pawn == -1) fen[i++] = '-';
+  else {
+    indexToName(board.en_passant_pawn, fen+i);
+    i += 2;
+  }
   // fen is incomplete here but we don't need to complete it
 
-end:
   fen[i] = '\0';
-  printf("FEN: %s - %d %d\n", fen, board.halfmove, board.fullmove);
+  printf("FEN: %s %d %d\n", fen, board.halfmove, board.fullmove);
 }

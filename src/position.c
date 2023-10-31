@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "position.h"
+#include "miscfunctions.h"
 
 uint8_t piece_sym['z']; // Piece Representations
 
@@ -67,11 +68,19 @@ void setPosition(char* fen, board_t* board) {
     }
   }
 
+  // en passant
+  while(i<fenlen && fen[i]==' ') i++;
+  if(fen[i]=='-') board->en_passant_pawn=-1;
+  else {
+    board->en_passant_pawn = nameToIndex(fen+i);
+    i++;
+  }
+
   // halfmove and fullmove
   board->halfmove = 0;
   board->fullmove = 1;
 
-  while(i<fenlen && (fen[i]==' ' || fen[i]=='-')) i++;
+  while(i<fenlen && fen[i]==' ') i++;
   if(i >= fenlen) return;
   int halfmove = fen[i++] - '0';
   if(fen[i]!=' ') halfmove = halfmove*10 + fen[i++] - '0';
