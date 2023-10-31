@@ -35,6 +35,19 @@ void initPositionVars(board_t* board) {
   init_board(board);
 }
 
+void validate_castle(board_t* board) {
+  int castle_ability=0;
+  if(board->squares[4]==(WHITE|KING)) {
+    if(board->squares[0]==(WHITE|ROOK)) castle_ability |= WHITE_QUEEN_SIDE;
+    if(board->squares[7]==(WHITE|ROOK)) castle_ability |= WHITE_KING_SIDE;
+  }
+  if(board->squares[60]==(BLACK|KING)) {
+    if(board->squares[56]==(BLACK|ROOK)) castle_ability |= BLACK_QUEEN_SIDE;
+    if(board->squares[63]==(BLACK|ROOK)) castle_ability |= BLACK_KING_SIDE;
+  }
+  board->castle &= castle_ability;
+}
+
 void setPosition(char* fen, board_t* board) {
   int fenlen = strlen(fen);
   
@@ -67,6 +80,7 @@ void setPosition(char* fen, board_t* board) {
       case 'q': board->castle |= BLACK_QUEEN_SIDE; break;
     }
   }
+  validate_castle(board);
 
   // en passant
   while(i<fenlen && fen[i]==' ') i++;

@@ -28,6 +28,8 @@ typedef struct {
   int fullmove;
 } board_t;
 
+void validate_castle(board_t* board);
+
 extern uint8_t piece_sym['z']; // Piece Representations or symbols, can be used for parsing fen and displaying current position
 
 void init_board(board_t* board);

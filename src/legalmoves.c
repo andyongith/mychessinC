@@ -547,20 +547,7 @@ board_t makeMove(board_t* boardx, move_t move) {
       case 58: shiftPiece(56,59, &board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
     }
   } else {
-    switch(move.startsqr) {
-      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, &board); break;
-      case 4 : delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
-      case 7 : delCastleAbility(WHITE_KING_SIDE , &board); break;
-      case 56: delCastleAbility(BLACK_QUEEN_SIDE, &board); break;
-      case 60: delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
-      case 63: delCastleAbility(BLACK_KING_SIDE , &board); break;
-    }
-    switch(move.targetsqr) {
-      case 0 : delCastleAbility(WHITE_QUEEN_SIDE, &board); break;
-      case 4 : delCastleAbility(WHITE_KING_SIDE , &board); break;
-      case 56: delCastleAbility(BLACK_QUEEN_SIDE, &board); break;
-      case 63: delCastleAbility(BLACK_KING_SIDE , &board); break;
-    }
+    validate_castle(&board);
   }
 
   switchTurn(&board);
