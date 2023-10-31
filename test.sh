@@ -18,10 +18,11 @@ echo -e "DEPTH = ${depth}\n"
 
 test_fen() {
   local fen=$1
-  your_output=$(./start -f "${fen}" -t $depth)
   engine_output=$(echo -e "position fen ${fen}\ngo perft $depth" | stockfish | tail -n 2 | head -n 1 | cut -d ' ' -f 3)
+  printf "%s %7d : " $2 ${engine_output}
+  your_output=$(./start -f "${fen}" -t $depth)
+  printf "%7d =>  " ${your_output}
 
-  printf "%s %7d : %7d =>  " $2 ${engine_output} "${your_output}"
   if [[ $engine_output -eq $your_output ]]; then
     echo "PASSED ✅"
   else
@@ -32,7 +33,7 @@ test_fen() {
 
 # echo "Index) [engine output] : [your output] => result"
 if [[ -n $2 ]]; then
-  test_fen "$2"
+  test_fen "$2" " "
 else
   for i in "${!testfens[@]}"; do
     test_fen "${testfens[$i]}" " " # $i

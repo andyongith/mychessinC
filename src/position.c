@@ -58,6 +58,7 @@ void setPosition(char* fen, board_t* board) {
   // castling
   board->castle = 0;
   while(i<fenlen && fen[i]!=' ') {
+    if(fen[i]=='-') { i++; break; }
     switch(fen[i++]) {
       case 'K': board->castle |= WHITE_KING_SIDE ; break; 
       case 'Q': board->castle |= WHITE_QUEEN_SIDE; break;
@@ -66,14 +67,18 @@ void setPosition(char* fen, board_t* board) {
     }
   }
 
-  // halfmove
+  // halfmove and fullmove
+  board->halfmove = 0;
+  board->fullmove = 1;
+
   while(i<fenlen && (fen[i]==' ' || fen[i]=='-')) i++;
+  if(i >= fenlen) return;
   int halfmove = fen[i++] - '0';
   if(fen[i]!=' ') halfmove = halfmove*10 + fen[i++] - '0';
   board->halfmove = halfmove;
 
-  // fullmove
   while(i<fenlen && fen[i]==' ') i++;
+  if(i >= fenlen) return;
   int fullmove = fen[i++] - '0';
   if(i<fenlen && fen[i]!=' ') fullmove = fullmove*10 + fen[i++] - '0';
   board->fullmove = fullmove;

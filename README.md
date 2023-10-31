@@ -101,6 +101,7 @@ Just fork it and do whatever you want
 ## To-do
 #### [Issues]
 * Knight(on e5) moves are not added in testFen[1] i.e in fen _"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBP PP/R3K2R w KQkq -"_;
+* fix issue in printFen function
 #### [Features]
 * Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board

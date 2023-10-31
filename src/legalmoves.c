@@ -125,10 +125,7 @@ void update_pinned_pieces(int color, board_t board) {
          )
         ) {
 
-        if(pinnedSqr!=-1) {
-          for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
-        }
-        else {
+        if(pinnedSqr==-1) {
           switch(lastpinningSqr) {
             case -1:
               for(int j=0; j<=i; j++) checkPins[j] = pins[j];
@@ -138,12 +135,18 @@ void update_pinned_pieces(int color, board_t board) {
           }
           lastpinningSqr = pins[i];
         }
+        else {
+          for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
+        }
         break;
       }
 
       else if(colorofpiece(currentPiece)==color) {
-        pinnedSqr = pins[i];
+        if(pinnedSqr == -1) pinnedSqr = pins[i];
+        else break;
       }
+
+      else break;
     }
   }
 
@@ -274,11 +277,18 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
   if(board.squares[r*8+c]==0 &&
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
-    addMovebyPosition(sqr, r*8+c, -1, moves+mv);
     if(r==7 || r==0) {
-      moves[mv].promotingto = color | QUEEN;
+      int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
+      for(int i=0; i<4; i++) {
+        addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+        moves[mv].promotingto = color | possible_promotions[i];
+        mv++;
+      }
     }
-    mv++;
+    else {
+      addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+      mv++;
+    }
   }
 
   // 2 step forward
@@ -336,7 +346,7 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
-    for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
+    for(int i=col-1; 0<=i && leftPiece==NOPIECE; i--)
       leftPiece = board.squares[row*8+i];
     for(int i=col+2; i<8 && rightPiece==NOPIECE; i++)
       rightPiece = board.squares[row*8+i];
@@ -354,9 +364,9 @@ skippedfirst:
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
-    for(int i=col-1; 0<=i && leftPiece==NOPIECE; i++)
+    for(int i=col-2; 0<=i && leftPiece==NOPIECE; i--)
       leftPiece = board.squares[row*8+i];
-    for(int i=col+2; i<8 && rightPiece==NOPIECE; i++)
+    for(int i=col+1; i<8 && rightPiece==NOPIECE; i++)
       rightPiece = board.squares[row*8+i];
 
     if(leftPiece==(color|KING) && (rightPiece==(oppColor|ROOK) || rightPiece==(oppColor|QUEEN))) goto skippedsecond;
@@ -386,11 +396,11 @@ int addQueenMovesto(int sqr, board_t board, move_t* moves) {
 
 // Jumping Pieces
 int addKingMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
+  int dirOffset[8][2] = {{1,-1}, {1,0}, {1,1}, {0,-1}, {0,1}, {-1,-1}, {-1,0}, {-1,1}};
   return addJumpingPieceMovesto(sqr, dirOffset, 8, board, moves);
 }
 int addKnightMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[8][2] = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
+  int dirOffset[8][2] = {{2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2}, {1,-2}, {2,-1}};
   return addJumpingPieceMovesto(sqr, dirOffset, 8, board, moves);
 }
 
@@ -433,6 +443,20 @@ int update_legal_moves(board_t board, move_t* moves) {
   if(board.halfmove >= 100) return -2;
 
   update_pinned_pieces(board.turn, board);
+
+  /*
+  for(int j=0; j<64; j++) {
+    if(pinnedPieces[j][0]<0) continue;
+    char sqrName[3];
+    indexToName(j, sqrName);
+    printf("{%s} => ", sqrName);
+    for(int i=0; i<8; i++) {
+      indexToName(pinnedPieces[j][i], sqrName);
+      printf("[%s]", sqrName);
+    }
+    printf("\n");
+  }
+  */
 
   int kingSqr=-1;
   int moveNum=0;
