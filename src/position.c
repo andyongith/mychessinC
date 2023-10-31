@@ -15,7 +15,7 @@ void init_board(board_t* board) {
   board->en_passant_pawn=-1;
   board->fen[0] = '\0';
   board->halfmove = 0;
-  board->fullmove = 0;
+  board->fullmove = 1;
 }
 
 void initPositionVars(board_t* board) {
@@ -71,10 +71,8 @@ void setPosition(char* fen, board_t* board) {
   // en passant
   while(i<fenlen && fen[i]==' ') i++;
   if(fen[i]=='-') board->en_passant_pawn=-1;
-  else {
-    board->en_passant_pawn = nameToIndex(fen+i);
-    i++;
-  }
+  else board->en_passant_pawn = nameToIndex(fen+i);
+  i++;
 
   // halfmove and fullmove
   board->halfmove = 0;

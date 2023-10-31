@@ -299,7 +299,9 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
       ( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1 ) &&
       ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
     addMovebyPosition(sqr, r*8+c, -1, moves+mv);
-    moves[mv].is_en_passant_pawn = true;
+    if( (0<=c-1 && board.squares[r*8+c-1]==(oppColor|PAWN)) ||
+        (c+1<8  && board.squares[r*8+c+1]==(oppColor|PAWN)) )
+      moves[mv].is_en_passant_pawn = true;
     mv++;
   }
 
@@ -408,6 +410,7 @@ int addCastlingMove(
     int kingfrom, int kingto, int rooksqr, int identity, int color,
     board_t board, move_t* moves ) {
   if( (board.castle & identity) != identity ) return 0;
+  if( board.squares[kingfrom]!=(color|KING) || board.squares[rooksqr]!=(color|ROOK) ) return 0;
 
   bool notAllowedin[64];
   board.squares[kingfrom] = NOPIECE;

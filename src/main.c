@@ -34,6 +34,18 @@ int showNodesNum(board_t board, int depth) {
   return -1;
 }
 
+int showAllFens(board_t board) {
+  move_t moves[MOVES_ARR_LEN];
+  int moves_num = update_legal_moves(board, moves);
+
+  for(int mv=0; mv<moves_num; mv++) {
+    board_t boardx = makeMove(&board, moves[mv]);
+    printFen(boardx);
+  }
+
+  return moves_num;
+}
+
 int main(int argc, char **argv) {
   char testFens[30][FEN_LEN];
   strcpy(testFens[ 0], STARTFEN);
@@ -50,7 +62,8 @@ int main(int argc, char **argv) {
   char loadingfen[FEN_LEN] = STARTFEN;
   bool noBoard = false;
   bool testing = false;
-  int testdepth = 1;
+  int testdepth = 1; // > 0 : triggers showNodesNum
+                     // <=0 : triggers showAllFens
 
   int argi = 1;
   while(argi<argc && argv[argi][0]=='-') {
@@ -109,6 +122,8 @@ int main(int argc, char **argv) {
 
   setPosition(loadingfen, &Board);
 
+  // showAllFens(Board);
+
   srand(time(NULL));
   if(!noBoard && argi < argc) {
          if(strcmp(argv[argi], "white" )==0) play_manually(WHITE, Board);
@@ -119,7 +134,8 @@ int main(int argc, char **argv) {
   else if(!noBoard) play_manually(WHITE, Board);
 
   if(testing) {
-    printf("%d\n", showNodesNum(Board, testdepth));
+    if(testdepth > 0 ) printf("%d\n", showNodesNum(Board, testdepth));
+    else showAllFens(Board);
   }
 
   return 0;

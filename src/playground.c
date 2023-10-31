@@ -14,6 +14,7 @@ void play_randomly(board_t board) {
   int num_of_moves = update_legal_moves(board, valid_moves);
 
   while(num_of_moves>0) {
+    printf("FEN: ");
     printFen(board);
     drawBoard(board);
     printf("num_of_available_moves: %d\n", num_of_moves);
@@ -32,6 +33,7 @@ void play_randomly(board_t board) {
     num_of_moves = update_legal_moves(board, valid_moves);
     // sleep(botmvdelay);
   }
+  printf("FEN: ");
   printFen(board);
   drawBoard(board);
   
@@ -48,6 +50,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
   int num_of_moves = update_legal_moves(board, valid_moves);
 
   while(num_of_moves>0) {
+    printf("FEN: ");
     printFen(board);
     drawBoard(board);
     printf("num_of_available_moves: %d\n", num_of_moves);
@@ -91,6 +94,7 @@ void play_manually(int side, board_t board) { // side can be WHITE, BLACK or any
     num_of_moves = update_legal_moves(board, valid_moves);
     printf("\n");
   }
+  printf("FEN: ");
   printFen(board);
   drawBoard(board);
 }
