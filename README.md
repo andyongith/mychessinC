@@ -100,7 +100,7 @@ Just fork it and do whatever you want
 
 ## To-do
 #### [Issues]
-* Fix all those bugs
+* Make it more efficient
 #### [Features]
 * Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board

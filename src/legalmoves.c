@@ -104,7 +104,6 @@ void update_pinned_pieces(int color, board_t board) {
   int row=kingPos/8, col=kingPos%8;
 
   // Checking orthoganally and/or diagonally
-  int lastpinningSqr=-1;
   int dirOffset1[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
   for(int dir=0; dir<8; dir++) {
     int pins[8];
@@ -126,14 +125,13 @@ void update_pinned_pieces(int color, board_t board) {
         ) {
 
         if(pinnedSqr==-1) {
-          switch(lastpinningSqr) {
+          switch(checkPins[0]) {
             case -1:
               for(int j=0; j<=i; j++) checkPins[j] = pins[j];
               break;
             default:
-              for(int j=0; j<=i; j++) checkPins[j] = 64;
+              for(int j=0; j<8; j++) checkPins[j] = 64;
           }
-          lastpinningSqr = pins[i];
         }
         else {
           for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
@@ -161,7 +159,7 @@ void update_pinned_pieces(int color, board_t board) {
         colorofpiece(squares[index])==color ||
         typeofpiece(squares[index])!=KNIGHT) continue;
 
-    switch(lastpinningSqr) {
+    switch(checkPins[0]) {
       case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
       default: for(int j=0; j<8; j++) checkPins[j]=64;
     }
@@ -179,7 +177,7 @@ void update_pinned_pieces(int color, board_t board) {
         colorofpiece(squares[index])==color ||
         typeofpiece(squares[index])!=PAWN) continue;
 
-    switch(lastpinningSqr) {
+    switch(checkPins[0]) {
       case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
       default: for(int j=0; j<8; j++) checkPins[j]=64;
     }
@@ -458,6 +456,13 @@ int update_legal_moves(board_t board, move_t* moves) {
       printf("[%s]", sqrName);
     }
     printf("\n");
+  }
+  */
+  /*
+  for(int i=0; i<8; i++) {
+    char sqrName[3];
+    indexToName(checkPins[i], sqrName);
+    printf("[%d%s]", checkPins[i], sqrName);
   }
   */
 

@@ -15,7 +15,7 @@ int botmvdelay=1;
 
 board_t Board;
 
-int showNodesNum(board_t board, int depth) {
+unsigned long long showNodesNum(board_t board, int depth) {
   move_t moves[MOVES_ARR_LEN];
   int moves_num = update_legal_moves(board, moves);
 
@@ -23,7 +23,7 @@ int showNodesNum(board_t board, int depth) {
     return moves_num > 0 ? moves_num : 0;
   }
   else {
-    int num=0;
+    unsigned long long num=0;
     for(int mv=0; mv<moves_num; mv++) {
       board_t boardx = makeMove(&board, moves[mv]);
       num += showNodesNum(boardx, depth-1);

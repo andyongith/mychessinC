@@ -75,8 +75,8 @@ test_fen() {
     echo "PASSED ✅"
   else
     echo "FAILED ❌"
-    echo "${fen1}"
-    echo "${fen2}"
+    echo -e "\t${fen1}"
+    echo -e "\t${fen2}"
   fi
   IFS=''
 }
