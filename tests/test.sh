@@ -19,12 +19,16 @@ then
   fi
 fi
 
-depth=2
+depth=1
 tempfen=
-fenfile="${scriptpath}/defTestFens"
+if [[ -f "${scriptpath}/testfens" ]]; then
+  fenfile="${scriptpath}/testfens"
+else
+  fenfile="${scriptpath}/defTestFens"
+fi
 
 argSelected=
-for arg in $@
+for arg in "$@"
 do
   case $argSelected in
     "depth")

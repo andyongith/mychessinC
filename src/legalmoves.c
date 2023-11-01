@@ -341,11 +341,11 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
     }
   }
 
-  // en_passant
+  // en_passant ----BUG in checks----
   r=row+dir, c=col+1;
   if(0<=c && c<8 && board.en_passant_pawn == row*8+c && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 || searchIn(checkPins,8,row*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-1; 0<=i && leftPiece==NOPIECE; i--)
@@ -363,7 +363,7 @@ skippedfirst:
   c=col-1;
   if(0<=c && c<8 && board.en_passant_pawn == row*8+c && 
       (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 ))
+      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 || searchIn(checkPins,8,row*8+c)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
     for(int i=col-2; 0<=i && leftPiece==NOPIECE; i--)
