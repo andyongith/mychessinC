@@ -12,6 +12,7 @@
 
 int showlegals=0;
 int botmvdelay=1;
+bool enable_unicode=false;
 
 board_t Board;
 
@@ -82,11 +83,11 @@ int main(int argc, char **argv) {
         printf("-h => shows this help.\n");
         printf("\n");
 
-        printf("-f <sub_option> => loads custom fen.\n");
+        printf("-f <sub_option>             => loads custom fen.\n");
         printf("-f <your_fen_inside_quotes> => loads your custom position.\n");
-        printf("-f startfen => loads the starting position.\n");
-        printf("-f testfen <num> => loads <num>th testfen.\n");
-        printf("-f ltestfen => loads last testfen.\n");
+        printf("-f startfen                 => loads the starting position.\n");
+        printf("-f testfen <num>            => loads <num>th testfen.\n");
+        printf("-f ltestfen                 => loads last testfen.\n");
         printf("\n");
 
         printf("-t => I added this option for testing purposes only.\n");
@@ -96,6 +97,10 @@ int main(int argc, char **argv) {
         printf("\n");
 
         printf("-d <num> => Sets delay for each bot move. Default is 1sec.\n");
+        printf("\n");
+
+        printf("-u => this enables unicode symbols for representing pieces.\n");
+        printf("\n");
 
         return 0;
         break;
@@ -120,6 +125,10 @@ int main(int argc, char **argv) {
 
       case 'd':
         botmvdelay = stringtonum(argv[(argi++)+1]);
+        break;
+
+      case 'u':
+        enable_unicode = true;
         break;
 
       default:

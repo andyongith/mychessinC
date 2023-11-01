@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "position.h"
 #include "miscfunctions.h"
@@ -13,7 +14,10 @@
 char rowSeparator[] = "+---+---+---+---+---+---+---+---+";
 char colSeparator[] = "|";
 
-void drawBoard(board_t board) {
+// char unicodeSym[] = "   "; int unicodeSize = 3;
+char unicodeSym[] = "    󰡗󰡙󰡘󰡜󰡛󰡚"; int unicodeSize = 4;
+
+void drawBoard(board_t board, bool enable_unicode) {
   printf("  %s%s\n", BORDERCOLOR, rowSeparator);
 
   int row=7, col=0;
@@ -24,9 +28,15 @@ void drawBoard(board_t board) {
 
     int piece = board.squares[row*8 + col];
 
-    printf("%s", piece & WHITE ? WHITECOLOR : BLACKCOLOR);
-    printf(" %c ", (char) piece_sym[piece]);
-    printf("%s%s", BORDERCOLOR, colSeparator);
+    printf("%s ", piece & WHITE ? WHITECOLOR : BLACKCOLOR);
+    if(typeofpiece(piece)==NOPIECE) printf(" ");
+    else if(enable_unicode) {
+      int index = unicodeSize * typeofpiece(piece);
+      for(int i=0; i<unicodeSize; i++)
+        printf("%c", unicodeSym[index+i]);
+    }
+    else printf("%c", (char) piece_sym[piece]);
+    printf(" %s%s", BORDERCOLOR, colSeparator);
 
     if(col==7) {
       printf("%s\n  %s\n", BORDERCOLOR, rowSeparator);

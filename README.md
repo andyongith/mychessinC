@@ -59,6 +59,8 @@ if you ommit the _side_ it'll assume you're playing as white
   * **startfen** for starting position
   * **testfen <index>** for _testFen[index]_
   * **ltestfen** for _testFen[last index]_  
+* **-u**  
+ This option enables unicode symbols for representing pieces
  ##### example
  ```
 $ ./start -f "8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45"
@@ -102,7 +104,6 @@ Just fork it and do whatever you want
 #### [Issues]
 * Make it more efficient
 #### [Features]
-* Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board
 * Make a better help(-h option) prompt
 * Make a better README

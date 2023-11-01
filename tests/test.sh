@@ -25,6 +25,7 @@ if [[ -f "${scriptpath}/testfens" ]]; then
   fenfile="${scriptpath}/testfens"
 else
   fenfile="${scriptpath}/defTestFens"
+  depth=4
 fi
 
 argSelected=
