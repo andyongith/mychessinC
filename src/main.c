@@ -20,7 +20,7 @@ int showNodesNum(board_t board, int depth) {
   int moves_num = update_legal_moves(board, moves);
 
   if(depth<2) {
-    return moves_num > 0 ? moves_num : 1;
+    return moves_num > 0 ? moves_num : 0;
   }
   else {
     int num=0;
@@ -41,6 +41,15 @@ int showAllFens(board_t board) {
   for(int mv=0; mv<moves_num; mv++) {
     board_t boardx = makeMove(&board, moves[mv]);
     printFen(boardx);
+    if(moves[mv].is_en_passant_pawn) {
+      printf(";");
+      printFen(board);
+      char sqrName1[3], sqrName2[3];
+      indexToName(moves[mv].startsqr , sqrName1);
+      indexToName(moves[mv].targetsqr, sqrName2);
+      printf(" moves %s%s", sqrName1, sqrName2);
+    }
+    printf("\n");
   }
 
   return moves_num;

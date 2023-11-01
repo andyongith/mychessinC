@@ -127,5 +127,5 @@ void printFen(board_t board) {
   // fen is incomplete here but we don't need to complete it
 
   fen[i] = '\0';
-  printf("%s %d %d\n", fen, board.halfmove, board.fullmove);
+  printf("%s %d %d", fen, board.halfmove, board.fullmove);
 }

@@ -55,19 +55,26 @@ done
 echo -e "DEPTH = ${depth}\n"
 
 test_fen() {
-  local fen=$1
-  engine_output=$(echo -e "position fen ${fen}\ngo perft $depth" | stockfish | tail -n 2 | head -n 1 | cut -d ' ' -f 3)
+  IFS=';'
+  local fen=
+  read -ra fen <<< "$1"
+  local fen1=${fen[0]}
+  local fen2=${fen[-1]}
+
+  engine_output=$(echo -e "position fen ${fen2}\ngo perft $depth" | stockfish | tail -n 2 | head -n 1 | cut -d ' ' -f 3)
   printf "%s %7d : " $2 ${engine_output}
 
-  your_output=$(${scriptpath}/../start -f "${fen}" -t $depth)
+  your_output=$(${scriptpath}/../start -f "${fen1}" -t $depth)
   printf "%7d =>  " ${your_output}
 
   if [[ $engine_output -eq $your_output ]]; then
     echo "PASSED ✅"
   else
     echo "FAILED ❌"
-    echo -e "${fen}\n"
+    echo "${fen1}"
+    echo "${fen2}"
   fi
+  IFS=''
 }
 
 if [[ -n $tempfen ]]; then
