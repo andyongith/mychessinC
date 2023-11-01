@@ -100,7 +100,7 @@ Just fork it and do whatever you want
 
 ## To-do
 #### [Issues]
-* Some moves are missing in last testFen with depth 3, fix it.
+* Fix bug related to en passant and others(if any)
 #### [Features]
 * Add unicode symbols(enable using -u option) for chess pieces
 * Add the ability to flip the board
