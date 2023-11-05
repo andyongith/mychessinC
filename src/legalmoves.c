@@ -6,6 +6,11 @@
 #include "miscfunctions.h"
 #include "legalmoves.h"
 
+int dirsR[4] = {NORTH, SOUTH, EAST, WEST};
+int dirsB[4] = {NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST};
+int dirsQ[8] = {NORTH_WEST, NORTH, NORTH_EAST, WEST, EAST, SOUTH_WEST, SOUTH, SOUTH_EAST};
+int dirsN[8] = {KNIGHT1,KNIGHT2,KNIGHT3,KNIGHT4,KNIGHT5,KNIGHT6,KNIGHT7,KNIGHT8};
+
 int preComputedMoves(int sqr, int dir, int index) {
   static bool computed=false;
   static int allMoves[64][16][8];
@@ -75,11 +80,6 @@ void sqrsCtrlbyJumpingPc(bool out_data[64], int sqr, int* dirs, int dirLen, int 
 }
 
 void sqrsControlledby(bool out_data[64], int color, int squares[64]) {
-  int dirsR[4] = {NORTH, SOUTH, EAST, WEST};
-  int dirsB[4] = {NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST};
-  int dirsQ[8] = {NORTH_WEST, NORTH, NORTH_EAST, WEST, EAST, SOUTH_WEST, SOUTH, SOUTH_EAST};
-  int dirsK[8] = {NORTH_WEST, NORTH, NORTH_EAST, WEST, EAST, SOUTH_WEST, SOUTH, SOUTH_EAST};
-  int dirsN[8] = {KNIGHT1,KNIGHT2,KNIGHT3,KNIGHT4,KNIGHT5,KNIGHT6,KNIGHT7,KNIGHT8};
   int dirsWP[8] = {NORTH_WEST, NORTH_EAST};
   int dirsBP[8] = {SOUTH_WEST, SOUTH_EAST};
 
@@ -91,7 +91,7 @@ void sqrsControlledby(bool out_data[64], int color, int squares[64]) {
       case ROOK  : sqrsCtrlbySlidingPc(out_data, i, dirsR, 4, squares); break;
       case BISHOP: sqrsCtrlbySlidingPc(out_data, i, dirsB, 4, squares); break;
       case QUEEN : sqrsCtrlbySlidingPc(out_data, i, dirsQ, 8, squares); break;
-      case KING  : sqrsCtrlbyJumpingPc(out_data, i, dirsK, 8, squares); break;
+      case KING  : sqrsCtrlbyJumpingPc(out_data, i, dirsQ, 8, squares); break;
       case KNIGHT: sqrsCtrlbyJumpingPc(out_data, i, dirsN, 8, squares); break;
       case PAWN  :
            if(color == BLACK) sqrsCtrlbyJumpingPc(out_data, i, dirsBP, 2, squares);
@@ -104,10 +104,10 @@ void sqrsControlledby(bool out_data[64], int color, int squares[64]) {
 // Pinned Pieces
 int pinnedPieces[64][8];
 int checkPins[8]; // When not in check all values(i.e squares) are -1
-                   // When in check all indices have some values and each piece can only
-                   // move to the squares it contains
-                   // When in double check all values are 64, means no piece can move
-                   // other than the king itself
+                  // When in check all indices have some values and each piece can only
+                  // move to the squares it contains
+                  // When in double check all values are 64, means no piece can move
+                  // other than the king itself
 void update_pinned_pieces(int color, board_t board) {
   // initialisation
   for(int i=0; i<64; i++) {
@@ -120,65 +120,49 @@ void update_pinned_pieces(int color, board_t board) {
   int row=kingPos/8, col=kingPos%8;
 
   // Checking orthoganally and/or diagonally
-  int dirOffset1[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  for(int dir=0; dir<8; dir++) {
+  for(int dirI=0; dirI<8; dirI++) {
     int pins[8];
     int pinnedSqr=-1;
+    int dir = dirI<4 ? dirsR[dirI] : dirsB[dirI-4];
 
-    for( int r=row+dirOffset1[dir][0],c=col+dirOffset1[dir][1], i=0;
-        0<=r && r<8 && 0<=c && c<8;
-        r+=dirOffset1[dir][0], c+=dirOffset1[dir][1], i++
-        ) {
-
-      pins[i] = r*8 + c;
+    pins[0] = preComputedMoves(kingPos,dir,0);
+    for( int i=0; preComputedMoves(kingPos,dir,i)!=-1; i++) {
+      pins[i] = preComputedMoves(kingPos,dir,i);
       int currentPiece = squares[pins[i]];
       if(currentPiece==NOPIECE) continue;
 
       if(colorofpiece(currentPiece)!=color && (
-          ( dir<4 && (typeofpiece(currentPiece)==ROOK || typeofpiece(currentPiece)==QUEEN)) || 
-          ( dir>=4 && (typeofpiece(currentPiece)==BISHOP || typeofpiece(currentPiece)==QUEEN) )
+          ( dirI<4 && (typeofpiece(currentPiece)==ROOK || typeofpiece(currentPiece)==QUEEN)) || 
+          ( dirI>=4 && (typeofpiece(currentPiece)==BISHOP || typeofpiece(currentPiece)==QUEEN) )
          )
         ) {
-
         if(pinnedSqr==-1) {
-          switch(checkPins[0]) {
-            case -1:
-              for(int j=0; j<=i; j++) checkPins[j] = pins[j];
-              break;
-            default:
-              for(int j=0; j<8; j++) checkPins[j] = 64;
-          }
+          if(checkPins[0]==-1) for(int j=0; j<=i; j++) checkPins[j] = pins[j];
+          else for(int j=0; j<8; j++) checkPins[j] = 64;
         }
-        else {
-          for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
-        }
+        else for(int j=0; j<=i; j++) pinnedPieces[pinnedSqr][j] = pins[j];
         break;
       }
-
       else if(colorofpiece(currentPiece)==color) {
         if(pinnedSqr == -1) pinnedSqr = pins[i];
         else break;
       }
-
       else break;
     }
   }
 
   // Checking Knight
   int dirOffset2[8][2] = {{2,1}, {-2,1}, {2,-1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
-  for(int dir=0; dir<8; dir++) {
-    int r=row+dirOffset2[dir][0],c=col+dirOffset2[dir][1];
-    if(!(0<=r && r<8 && 0<=c && c<8)) continue;
-    int index = r*8 + c;
+  for(int dir=KNIGHT1; dir<=KNIGHT8; dir++) {
+    int targetSqr = preComputedMoves(kingPos,dir,0);
+    if(targetSqr==-1) continue;
 
-    if(squares[index]==NOPIECE ||
-        colorofpiece(squares[index])==color ||
-        typeofpiece(squares[index])!=KNIGHT) continue;
+    if(squares[targetSqr]==NOPIECE ||
+        colorofpiece(squares[targetSqr])==color ||
+        typeofpiece(squares[targetSqr])!=KNIGHT) continue;
 
-    switch(checkPins[0]) {
-      case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
-      default: for(int j=0; j<8; j++) checkPins[j]=64;
-    }
+    if(checkPins[0]==-1) for(int j=0; j<8; j++) checkPins[j]=targetSqr;
+    else for(int j=0; j<8; j++) checkPins[j]=64;
   }
 
   // Checking Pawn
@@ -193,16 +177,13 @@ void update_pinned_pieces(int color, board_t board) {
         colorofpiece(squares[index])==color ||
         typeofpiece(squares[index])!=PAWN) continue;
 
-    switch(checkPins[0]) {
-      case -1: for(int j=0; j<8; j++) checkPins[j]=index; break;
-      default: for(int j=0; j<8; j++) checkPins[j]=64;
-    }
+    if(checkPins[0]==-1) for(int j=0; j<8; j++) checkPins[j]=index;
+    else for(int j=0; j<8; j++) checkPins[j]=64;
   }
 }
 
 //
-void addMovebyPosition(
-    int startsqr, int targetsqr, int captures, move_t* move ) {
+void addMovebyPosition(int startsqr, int targetsqr, int captures, move_t* move) {
   move->startsqr = startsqr;
   move->targetsqr = targetsqr;
   move->captures = captures;
@@ -241,10 +222,32 @@ int addSlidingPieceMovesto(
   return mv;
 }
 
-int addJumpingPieceMovesto(
-    int sqr, int (*offsets)[2], int offsetsLen, board_t board, move_t* moves ) {
+int addSlidingPieceMovestox(int sqr, int* dirs, int dirLen, board_t board, move_t* moves) {
   int mv=0;
-  int row=sqr/8, col=sqr%8;
+  int piece = board.squares[sqr];
+  int color = colorofpiece(piece);
+  int oppColor = oppositecolor(color);
+
+  for(int dirI=0; dirI<dirLen; dirI++) {
+    int dir = dirs[dirI];
+    for(int sqrI=0; preComputedMoves(sqr, dir, sqrI)!=-1 && sqrI<8; sqrI++) {
+      int targetSqr = preComputedMoves(sqr,dir,sqrI);
+      int targetcolor = colorofpiece(board.squares[targetSqr]);
+      if(color == targetcolor) break;
+      if(( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,targetSqr)!=-1 ) &&
+          ( checkPins[0]==-1 || searchIn(checkPins,8,targetSqr)!=-1 )) {
+        addMovebyPosition(sqr, targetSqr, board.squares[targetSqr]>0 ? targetSqr : -1, moves + mv);
+        mv++;
+      }
+      if(oppColor == targetcolor) break;
+    }
+  }
+
+  return mv;
+}
+
+int addJumpingPieceMovesto(int sqr, int* dirs, int dirLen, board_t board, move_t* moves) {
+  int mv=0;
   int movingPiece = board.squares[sqr];
   int color = colorofpiece(movingPiece);
   int oppColor = oppositecolor(color);
@@ -256,16 +259,16 @@ int addJumpingPieceMovesto(
     board.squares[sqr] = movingPiece;
   }
 
-  for(int i=0; i<offsetsLen; i++) {
-    int r=row+offsets[i][0], c=col+offsets[i][1];
-    int index = r*8 + c;
-    int targetcolor = colorofpiece(board.squares[index]);
-    if( 0<=r && r<8 && 0<=c && c<8 && targetcolor!=color &&
-        (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,index)!=-1)) {
+  for(int dirI=0; dirI<dirLen; dirI++) {
+    int dir = dirs[dirI];
+    int targetSqr = preComputedMoves(sqr, dir, 0);
+    int targetcolor = colorofpiece(board.squares[targetSqr]);
+    if( targetSqr!=-1 && targetcolor!=color &&
+        (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,targetSqr)!=-1)) {
       if(typeofpiece(movingPiece)!=KING &&
-          !( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) continue;
-      if(typeofpiece(movingPiece)==KING && notAllowedin[index]) continue;
-      addMovebyPosition(sqr, index, board.squares[index]>0 ? index : -1, moves+mv);
+          !( checkPins[0]==-1 || searchIn(checkPins,8,targetSqr)!=-1 )) continue;
+      if(typeofpiece(movingPiece)==KING && notAllowedin[targetSqr]) continue;
+      addMovebyPosition(sqr, targetSqr, board.squares[targetSqr]>0 ? targetSqr : -1, moves+mv);
       mv++;
     }
   }
@@ -277,147 +280,126 @@ int addPawnMovesto(int sqr, board_t board, move_t* moves ){
   int piece = board.squares[sqr];
   int color = colorofpiece(piece);
   int oppColor = oppositecolor(color);
-  int dir = 1, homerow = 1;
+  int homerow = 1;
+
+  int f1 = preComputedMoves(sqr,NORTH,0); // 1*forward
+  int f2 = preComputedMoves(sqr,NORTH,1); // 2*forward
+  int fl = preComputedMoves(sqr,NORTH_WEST,0); // forward + left
+  int fr = preComputedMoves(sqr,NORTH_EAST,0); // forward + right
+  int lt = preComputedMoves(sqr,WEST,0); // left
+  int rt = preComputedMoves(sqr,EAST,0); // right
   if(color == BLACK) {
-    dir = -1; homerow = 6;
+    f1 = preComputedMoves(sqr,SOUTH,0);
+    f2 = preComputedMoves(sqr,SOUTH,1);
+    fl = preComputedMoves(sqr,SOUTH_WEST,0);
+    fr = preComputedMoves(sqr,SOUTH_EAST,0);
+    homerow = 6;
   }
 
   int mv=0;
-  int row=sqr/8, col=sqr%8;
+  int row=sqr/8;
 
-  int r,c;
   // 1 step forward
-  r=row+dir, c=col;
-  if(board.squares[r*8+c]==0 &&
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
-    if(r==7 || r==0) {
+  if(board.squares[f1]==NOPIECE &&
+      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,f1)!=-1) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,f1)!=-1 )) {
+    if(f2==-1) {
       int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
       for(int i=0; i<4; i++) {
-        addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+        addMovebyPosition(sqr, f1, -1, moves+mv);
         moves[mv].promotingto = color | possible_promotions[i];
         mv++;
       }
     }
     else {
-      addMovebyPosition(sqr, r*8+c, -1, moves+mv);
+      addMovebyPosition(sqr, f1, -1, moves+mv);
       mv++;
     }
   }
 
   // 2 step forward
-  r=row+2*dir, c=col;
-  int r_mid=row+1*dir;
   if(row==homerow &&
-      board.squares[r*8+c]==NOPIECE && board.squares[r_mid*8+c] == NOPIECE &&
-      ( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1 ) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
-    addMovebyPosition(sqr, r*8+c, -1, moves+mv);
-    if( (0<=c-1 && board.squares[r*8+c-1]==(oppColor|PAWN)) ||
-        (c+1<8  && board.squares[r*8+c+1]==(oppColor|PAWN)) )
+      board.squares[f2]==NOPIECE && board.squares[f1] == NOPIECE &&
+      ( pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,f2)!=-1 ) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,f2)!=-1 )) {
+    addMovebyPosition(sqr, f2, -1, moves+mv);
+    if( (lt!=-1 && board.squares[f2-1]==(oppColor|PAWN)) ||
+        (rt!=-1  && board.squares[f2+1]==(oppColor|PAWN)) )
       moves[mv].is_en_passant_pawn = true;
     mv++;
   }
 
   // captures
-  r=row+dir, c=col+1;
-  if(0<=c && c<8 && colorofpiece(board.squares[r*8+c]) == oppColor && 
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
-    if(r==7 || r==0) {
+  if(rt!=-1 && colorofpiece(board.squares[fr]) == oppColor && 
+      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,fr)!=-1) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,fr)!=-1 )) {
+    if(f2==-1) {
       int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
       for(int i=0; i<4; i++) {
-        addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+        addMovebyPosition(sqr, fr, fr, moves+mv);
         moves[mv].promotingto = color | possible_promotions[i];
         mv++;
       }
     }
     else {
-      addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+      addMovebyPosition(sqr, fr, fr, moves+mv);
       mv++;
     }
   }
-  c=col-1;
-  if(0<=c && c<8 && colorofpiece(board.squares[r*8+c]) == oppColor && 
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 )) {
-    if(r==7 || r==0) {
+  if(lt!=-1 && colorofpiece(board.squares[fl]) == oppColor && 
+      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,fl)!=-1) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,fl)!=-1 )) {
+    if(f2==-1) {
       int possible_promotions[] = {QUEEN, ROOK, KNIGHT, BISHOP};
       for(int i=0; i<4; i++) {
-        addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+        addMovebyPosition(sqr, fl, fl, moves+mv);
         moves[mv].promotingto = color | possible_promotions[i];
         mv++;
       }
     }
     else {
-      addMovebyPosition(sqr, r*8+c, r*8+c, moves+mv);
+      addMovebyPosition(sqr, fl, fl, moves+mv);
       mv++;
     }
   }
 
-  // en_passant ----BUG in checks----
-  r=row+dir, c=col+1;
-  if(0<=c && c<8 && board.en_passant_pawn == row*8+c && 
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 || searchIn(checkPins,8,row*8+c)!=-1 ))
+  // en_passant
+  if(fr!=-1 && board.en_passant_pawn == rt && 
+      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,fr)!=-1) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,fr)!=-1 || searchIn(checkPins,8,rt)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
-    for(int i=col-1; 0<=i && leftPiece==NOPIECE; i--)
-      leftPiece = board.squares[row*8+i];
-    for(int i=col+2; i<8 && rightPiece==NOPIECE; i++)
-      rightPiece = board.squares[row*8+i];
+    for(int i=0; preComputedMoves(sqr,WEST,i)!=-1 && leftPiece==NOPIECE; i++)
+      leftPiece = board.squares[preComputedMoves(sqr,WEST,i)];
+    for(int i=1; preComputedMoves(sqr,EAST,i)!=-1 && rightPiece==NOPIECE; i++)
+      rightPiece = board.squares[preComputedMoves(sqr,EAST,i)];
 
     if(leftPiece==(color|KING) && (rightPiece==(oppColor|ROOK) || rightPiece==(oppColor|QUEEN))) goto skippedfirst;
     if(rightPiece==(color|KING) && (leftPiece==(oppColor|ROOK) || leftPiece==(oppColor|QUEEN))) goto skippedfirst;
 
-    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
+    addMovebyPosition(sqr, fr, sqr+1, moves+mv);
     mv++;
   }
 skippedfirst:
-  c=col-1;
-  if(0<=c && c<8 && board.en_passant_pawn == row*8+c && 
-      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,r*8+c)!=-1) &&
-      ( checkPins[0]==-1 || searchIn(checkPins,8,r*8+c)!=-1 || searchIn(checkPins,8,row*8+c)!=-1 ))
+  if(fl!=-1 && board.en_passant_pawn == lt && 
+      (pinnedPieces[sqr][0]==-1 || searchIn(pinnedPieces[sqr],8,fl)!=-1) &&
+      ( checkPins[0]==-1 || searchIn(checkPins,8,fl)!=-1 || searchIn(checkPins,8,lt)!=-1 ))
   {
     int leftPiece=NOPIECE, rightPiece=NOPIECE;
-    for(int i=col-2; 0<=i && leftPiece==NOPIECE; i--)
-      leftPiece = board.squares[row*8+i];
-    for(int i=col+1; i<8 && rightPiece==NOPIECE; i++)
-      rightPiece = board.squares[row*8+i];
+    for(int i=1; preComputedMoves(sqr,WEST,i)!=-1 && leftPiece==NOPIECE; i++)
+      leftPiece = board.squares[preComputedMoves(sqr,WEST,i)];
+    for(int i=0; preComputedMoves(sqr,EAST,i)!=-1 && rightPiece==NOPIECE; i++)
+      rightPiece = board.squares[preComputedMoves(sqr,EAST,i)];
 
     if(leftPiece==(color|KING) && (rightPiece==(oppColor|ROOK) || rightPiece==(oppColor|QUEEN))) goto skippedsecond;
     if(rightPiece==(color|KING) && (leftPiece==(oppColor|ROOK) || leftPiece==(oppColor|QUEEN))) goto skippedsecond;
 
-    addMovebyPosition(sqr, r*8+c, row*8+c, moves+mv);
+    addMovebyPosition(sqr, fl, sqr-1, moves+mv);
     mv++;
   }
 skippedsecond:
 
   return mv;
-}
-
-// Sliding Pieces
-int addRookMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[4][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}};
-  return addSlidingPieceMovesto(sqr, dirOffset, 4, board, moves);
-}
-int addBishopMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[4][2] = {{-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  return addSlidingPieceMovesto(sqr, dirOffset, 4, board, moves);
-}
-int addQueenMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[8][2] = {{0,1}, {1,0}, {0,-1}, {-1,0}, {-1,-1}, {-1,1}, {1,1}, {1,-1}};
-  return addSlidingPieceMovesto(sqr, dirOffset, 8, board, moves);
-}
-
-// Jumping Pieces
-int addKingMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[8][2] = {{1,-1}, {1,0}, {1,1}, {0,-1}, {0,1}, {-1,-1}, {-1,0}, {-1,1}};
-  return addJumpingPieceMovesto(sqr, dirOffset, 8, board, moves);
-}
-int addKnightMovesto(int sqr, board_t board, move_t* moves) {
-  int dirOffset[8][2] = {{2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2}, {1,-2}, {2,-1}};
-  return addJumpingPieceMovesto(sqr, dirOffset, 8, board, moves);
 }
 
 int addCastlingMove(
@@ -450,58 +432,16 @@ int addCastlingMove(
 
 int update_legal_moves(board_t board, move_t* moves) {
   // ---Return Values---
-  // > 0 : no of available legal moves
+  // > 0 : no. of available legal moves
   // = 0 : Checkmate
   // =-1 : Stalemate
   // =-2 : Draw by 50 move rule
   //
 
-  /*
-  {
-    for(int sqr=0; sqr<64; sqr++) {
-      char sqrName[3];
-      indexToName(sqr, sqrName);
-      printf("{%s} =>", sqrName);
-      
-      for(int j=0; j<16; j++) {
-        printf("\t[%d]: ", j);
-        for(int i=0; i<8; i++) {
-          int tSqr = preComputedMoves(sqr, j, i);
-          indexToName(tSqr, sqrName);
-          printf(" %2s", sqrName);
-        }
-        printf("\n");
-      }
-      printf("\n");
-    }
-  }
-  */
-
   // Checking for Draws
   if(board.halfmove >= 100) return -2;
 
   update_pinned_pieces(board.turn, board);
-
-  /*
-  for(int j=0; j<64; j++) {
-    if(pinnedPieces[j][0]<0) continue;
-    char sqrName[3];
-    indexToName(j, sqrName);
-    printf("{%s} => ", sqrName);
-    for(int i=0; i<8; i++) {
-      indexToName(pinnedPieces[j][i], sqrName);
-      printf("[%s]", sqrName);
-    }
-    printf("\n");
-  }
-  */
-  /*
-  for(int i=0; i<8; i++) {
-    char sqrName[3];
-    indexToName(checkPins[i], sqrName);
-    printf("[%d%s]", checkPins[i], sqrName);
-  }
-  */
 
   int kingSqr=-1;
   int moveNum=0;
@@ -510,13 +450,13 @@ int update_legal_moves(board_t board, move_t* moves) {
     int color = colorofpiece(piece);
     if(color != board.turn) continue;
     switch(typeofpiece(piece)) {
-      case ROOK  : moveNum += addRookMovesto  (i, board, moves+moveNum); break;
-      case BISHOP: moveNum += addBishopMovesto(i, board, moves+moveNum); break;
-      case QUEEN : moveNum += addQueenMovesto (i, board, moves+moveNum); break;
-      case KING  : moveNum += addKingMovesto  (i, board, moves+moveNum);
+      case ROOK  : moveNum += addSlidingPieceMovestox(i, dirsR, 4, board, moves+moveNum); break;
+      case BISHOP: moveNum += addSlidingPieceMovestox(i, dirsB, 4, board, moves+moveNum); break;
+      case QUEEN : moveNum += addSlidingPieceMovestox(i, dirsQ, 8, board, moves+moveNum); break;
+      case KING  : moveNum += addJumpingPieceMovesto(i, dirsQ, 8, board, moves+moveNum);
                    kingSqr = i;
                    break;
-      case KNIGHT: moveNum += addKnightMovesto(i, board, moves+moveNum); break;
+      case KNIGHT: moveNum += addJumpingPieceMovesto(i, dirsN, 8, board, moves+moveNum); break;
       case PAWN  : moveNum += addPawnMovesto  (i, board, moves+moveNum); break;
     }
   }
@@ -583,10 +523,22 @@ board_t makeMove(board_t* boardx, move_t move) {
 
   if(move.is_castling) {
     switch(move.targetsqr) {
-      case 6 : shiftPiece(7 ,5 , &board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
-      case 2 : shiftPiece(0 ,3 , &board); delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board); break;
-      case 62: shiftPiece(63,61, &board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
-      case 58: shiftPiece(56,59, &board); delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board); break;
+      case 6 :
+        shiftPiece(7 ,5 , &board);
+        delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board);
+        break;
+      case 2 :
+        shiftPiece(0 ,3 , &board);
+        delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board);
+        break;
+      case 62:
+        shiftPiece(63,61, &board);
+        delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board);
+        break;
+      case 58:
+        shiftPiece(56,59, &board);
+        delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board);
+        break;
     }
   } else {
     validate_castle(&board);

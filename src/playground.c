@@ -116,7 +116,7 @@ int askPromotionPiece() {
   char piecesym;
   while(1) {
     scanf("%s", &piecesym);
-    piece = piece_sym[piecesym];
+    piece = piece_sym(piecesym);
     if(piece == NOPIECE || piece == ' ')
       printf("Invalid piece!! Enter again: ");
     else break;

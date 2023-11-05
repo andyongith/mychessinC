@@ -6,8 +6,6 @@
 #include "position.h"
 #include "miscfunctions.h"
 
-uint8_t piece_sym['z']; // Piece Representations
-
 void init_board(board_t* board) {
   for(int i=0; i<64; i++) board->squares[i] = NOPIECE;
   board->turn = WHITE;
@@ -18,21 +16,26 @@ void init_board(board_t* board) {
   board->fullmove = 1;
 }
 
-void initPositionVars(board_t* board) {
-  for(int i=0; i<'a'; i++) piece_sym[i] = ' ';
-  for(int i='a'; i<'z'; i++) piece_sym[i] = 0;
+// Piece Representations
+uint8_t piece_sym(int index) {
+  static bool computed=false;
+  static int array['z'];
+  if(!computed) {
+    computed=true;
+    for(int i=0; i<'a'; i++) array[i] = ' ';
+    for(int i='a'; i<'z'; i++) array[i] = 0;
 
-  int letters1[] = {'k','p','n','b','r','q'};
-  int letters2[] = {'K','P','N','B','R','Q'};
-  int values[] = {KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN};
-  for(int i=0; i<6; i++) piece_sym[letters1[i]] = BLACK | values[i];
-  for(int i=0; i<6; i++) piece_sym[letters2[i]] = WHITE | values[i];
-  for(int i=0; i<6; i++) piece_sym[BLACK | values[i]] = letters1[i];
-  for(int i=0; i<6; i++) piece_sym[WHITE | values[i]] = letters2[i];
-  piece_sym[' '] = NOPIECE;
-  piece_sym[NOPIECE] = ' ';
-
-  init_board(board);
+    int letters1[] = {'k','p','n','b','r','q'};
+    int letters2[] = {'K','P','N','B','R','Q'};
+    int values[] = {KING, PAWN, KNIGHT, BISHOP, ROOK, QUEEN};
+    for(int i=0; i<6; i++) array[letters1[i]] = BLACK | values[i];
+    for(int i=0; i<6; i++) array[letters2[i]] = WHITE | values[i];
+    for(int i=0; i<6; i++) array[BLACK | values[i]] = letters1[i];
+    for(int i=0; i<6; i++) array[WHITE | values[i]] = letters2[i];
+    array[' '] = NOPIECE;
+    array[NOPIECE] = ' ';
+  }
+  return array[index];
 }
 
 void validate_castle(board_t* board) {
@@ -49,6 +52,7 @@ void validate_castle(board_t* board) {
 }
 
 void setPosition(char* fen, board_t* board) {
+  init_board(board);
   int fenlen = strlen(fen);
   
   int i=0;
@@ -60,7 +64,7 @@ void setPosition(char* fen, board_t* board) {
       int skipcol = (int) (fen[i]-'0');
       while(skipcol--) { board->squares[row*8 + col]=0; col++; }
     }
-    else { board->squares[row*8 + col] = piece_sym[fen[i]]; col++; }
+    else { board->squares[row*8 + col] = piece_sym(fen[i]); col++; }
     i++;
   }
   while(i<fenlen && fen[i]==' ') i++;

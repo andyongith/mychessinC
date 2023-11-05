@@ -35,7 +35,7 @@ void drawBoard(board_t board, bool enable_unicode) {
       for(int i=0; i<unicodeSize; i++)
         printf("%c", unicodeSym[index+i]);
     }
-    else printf("%c", (char) piece_sym[piece]);
+    else printf("%c", (char) piece_sym(piece));
     printf(" %s%s", BORDERCOLOR, colSeparator);
 
     if(col==7) {
@@ -51,7 +51,7 @@ void drawBoard(board_t board, bool enable_unicode) {
 // Only For debugging(will remove it later)(don't forget to also remove from header)
 void printSquares(board_t board) {
   for(int i=0; i<64; i++) {
-    printf("%c,", piece_sym[board.squares[i]]);
+    printf("%c,", piece_sym(board.squares[i]));
   }
 }
 

@@ -30,10 +30,10 @@ typedef struct {
 
 void validate_castle(board_t* board);
 
-extern uint8_t piece_sym['z']; // Piece Representations or symbols, can be used for parsing fen and displaying current position
+uint8_t piece_sym(int index); // Piece Representations or symbols, can be used for parsing fen and displaying current position
 
 void init_board(board_t* board);
-void initPositionVars(board_t* board);
+void initPositionVars();
 
 void setPosition(char* fen, board_t* board);
 void shiftPiece(int from, int to, board_t* board);
