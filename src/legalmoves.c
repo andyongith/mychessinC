@@ -6,6 +6,58 @@
 #include "miscfunctions.h"
 #include "legalmoves.h"
 
+int preComputedMoves(int sqr, int dir, int index) {
+  static bool computed=false;
+  static int allMoves[64][16][8];
+  if(!computed) {
+    computed=true;
+    for(int sqrI=0; sqrI<64; sqrI++) {
+      int row = sqrI/8;
+      int col = sqrI%8;
+
+      int dirOffsets[8][2] = {
+        {1,-1}, {1,0}, {1,1},
+        {0,-1}, {0,1},
+        {-1,-1}, {-1,0}, {-1,1}
+      };
+      for(int offsetI=0; offsetI<8; offsetI++) {
+        int r = row + dirOffsets[offsetI][0];
+        int c = col + dirOffsets[offsetI][1];
+
+        int i=0;
+        while(0<=r && r<8 && 0<=c && c<8) {
+          allMoves[sqrI][offsetI][i++] = r*8 + c;
+          r += dirOffsets[offsetI][0];
+          c += dirOffsets[offsetI][1];
+        }
+        while(i<8) allMoves[sqrI][offsetI][i++] = -1;
+      }
+
+      int dirOffsetsK[8][2] = {
+        {2,-1}, {2,1},
+        {1,-2}, {1,2},
+        {-1,-2}, {-1,2},
+        {-2,-1}, {-2,1}
+      };
+      for(int offsetI=8; offsetI<16; offsetI++) {
+        int r = row + dirOffsets[offsetI][0];
+        int c = col + dirOffsets[offsetI][1];
+
+        int i=0;
+        if(0<=r && r<8 && 0<=c && c<8) {
+          allMoves[sqrI][offsetI][i++] = r*8 + c;
+        }
+        while(i<8) allMoves[sqrI][offsetI][i++] = -1;
+      }
+      // Squares for knights
+      //
+      //
+    }
+  }
+  
+  return allMoves[sqr][dir][index];
+}
+
 void sqrsCtrlbySlidingPc(bool out_data[64], int sqr, int (*offsets)[2], int offsetsLen, int squares[64] ) {
   int row=sqr/8, col=sqr%8;
 
@@ -439,6 +491,35 @@ int update_legal_moves(board_t board, move_t* moves) {
   // =-1 : Stalemate
   // =-2 : Draw by 50 move rule
   //
+
+  {
+    // preComputedMoves(0,0,0);
+    
+    // for(int i=0; i<64; i++) {
+    //   if(i%8 == 0) printf("\n");
+    //   printf("{%2d} => ", i);
+    //   for(int j=0; j<8; j++)
+    //     printf("%2d ", preComputedMoves(i, EAST, j));
+    //   printf("\n");
+    // }
+    
+    for(int sqr=0; sqr<64; sqr++) {
+      char sqrName[3];
+      indexToName(sqr, sqrName);
+      printf("{%s} =>", sqrName);
+      
+      for(int j=0; j<16; j++) {
+        printf("\t[%d]: ", j);
+        for(int i=0; i<8; i++) {
+          int tSqr = preComputedMoves(sqr, j, i);
+          indexToName(tSqr, sqrName);
+          printf(" %2s", sqrName);
+        }
+        printf("\n");
+      }
+      printf("\n");
+    }
+  }
 
   // Checking for Draws
   if(board.halfmove >= 100) return -2;

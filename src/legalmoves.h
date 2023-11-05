@@ -3,6 +3,17 @@
 
 #define MOVES_ARR_LEN 256
 
+#include "position.h"
+
+enum directions {
+  NORTH_WEST, NORTH, NORTH_EAST,
+  WEST, EAST,
+  SOUTH_WEST, SOUTH, SOUTH_EAST,
+
+  KNIGHT1, KNIGHT2, KNIGHT3, KNIGHT4,
+  KNIGHT5, KNIGHT6, KNIGHT7, KNIGHT8
+};
+
 typedef struct{
   int startsqr;
   int targetsqr;
