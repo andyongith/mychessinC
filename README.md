@@ -26,7 +26,8 @@ $ ./start
 FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 Enter your move: d2 d4
 ```
-**note: If symbols are not showing use the following line of code**
+**note:** If symbols are not showing use the following line of code  
+You should have [nerd fonts](https://www.nerdfonts.com/) installed in your system to see them
 ```
 ./start -u
 ```
