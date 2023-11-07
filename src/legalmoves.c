@@ -523,19 +523,19 @@ board_t makeMove(board_t* boardx, move_t move) {
 
   if(move.is_castling) {
     switch(move.targetsqr) {
-      case 6 :
+      case 6 : // g1
         shiftPiece(7 ,5 , &board);
         delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board);
         break;
-      case 2 :
+      case 2 : // c1
         shiftPiece(0 ,3 , &board);
         delCastleAbility(WHITE_KING_SIDE | WHITE_QUEEN_SIDE, &board);
         break;
-      case 62:
+      case 62: // g8
         shiftPiece(63,61, &board);
         delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board);
         break;
-      case 58:
+      case 58: // c8
         shiftPiece(56,59, &board);
         delCastleAbility(BLACK_KING_SIDE | BLACK_QUEEN_SIDE, &board);
         break;

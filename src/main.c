@@ -12,7 +12,7 @@
 
 int showlegals=0;
 int botmvdelay=1;
-bool enable_unicode=false;
+bool enable_unicode=true;
 
 board_t Board;
 
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
         printf("-d <num> => Sets delay for each bot move. Default is 1sec.\n");
         printf("\n");
 
-        printf("-u => this enables unicode symbols for representing pieces.\n");
+        printf("-u => this disables unicode symbols for representing pieces.\n");
         printf("\n");
 
         return 0;
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
         break;
 
       case 'u':
-        enable_unicode = true;
+        enable_unicode = false;
         break;
 
       default:

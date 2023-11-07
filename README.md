@@ -4,28 +4,31 @@ A text-based chess game entirely made in C
 
 ## What?
 ```
-$ ./start white  
-FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1  
-  +---+---+---+---+---+---+---+---+  
-8 | r | n | b | q | k | b | n | r |  
-  +---+---+---+---+---+---+---+---+  
-7 | p | p | p | p | p | p | p | p |  
-  +---+---+---+---+---+---+---+---+  
-6 |   |   |   |   |   |   |   |   |  
-  +---+---+---+---+---+---+---+---+  
-5 |   |   |   |   |   |   |   |   |  
-  +---+---+---+---+---+---+---+---+  
-4 |   |   |   |   |   |   |   |   |    
-  +---+---+---+---+---+---+---+---+  
-3 |   |   |   |   |   |   |   |   |  
-  +---+---+---+---+---+---+---+---+  
-2 | P | P | P | P | P | P | P | P |  
-  +---+---+---+---+---+---+---+---+  
-1 | R | N | B | Q | K | B | N | R |  
-  +---+---+---+---+---+---+---+---+  
-    a   b   c   d   e   f   g   h  
-num_of_available_moves: 20  
-Enter your move: 
+$ ./start
+  +---+---+---+---+---+---+---+---+
+8 | 󰡛 | 󰡘 | 󰡜 | 󰡚 | 󰡗 | 󰡜 | 󰡘 | 󰡛 |
+  +---+---+---+---+---+---+---+---+
+7 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 |
+  +---+---+---+---+---+---+---+---+
+6 |   |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+---+
+5 |   |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+---+
+4 |   |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+---+
+3 |   |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+---+
+2 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 | 󰡙 |
+  +---+---+---+---+---+---+---+---+
+1 | 󰡛 | 󰡘 | 󰡜 | 󰡚 | 󰡗 | 󰡜 | 󰡘 | 󰡛 |
+  +---+---+---+---+---+---+---+---+
+    a   b   c   d   e   f   g   h
+FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+Enter your move: d2 d4
+```
+**note: If symbols are not showing use the following line of code**
+```
+./start -u
 ```
 
 ## Why?
@@ -60,11 +63,10 @@ if you ommit the _side_ it'll assume you're playing as white
   * **testfen <index>** for _testFen[index]_
   * **ltestfen** for _testFen[last index]_  
 * **-u**  
- This option enables unicode symbols for representing pieces
+ This option disables unicode symbols for representing pieces
  ##### example
  ```
-$ ./start -f "8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45"
-FEN: 8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45
+ ./start -f "8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45" -u
   +---+---+---+---+---+---+---+---+
 8 |   |   |   |   |   |   |   |   |
   +---+---+---+---+---+---+---+---+
@@ -83,7 +85,7 @@ FEN: 8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45
 1 |   |   |   |   |   |   |   |   |
   +---+---+---+---+---+---+---+---+
     a   b   c   d   e   f   g   h
-num_of_available_moves: 16
+FEN: 8/R1P5/4p3/1P2k3/8/2r5/5PK1/8 w - - 1 45
 Enter your move:
  ```
 * **-l**  
@@ -94,7 +96,8 @@ Enter your move:
  Use this option for any help
 
 ## How?(for devs)
-Just fork it and do whatever you want
+Just fork it and do whatever you want  
+**note: If you're using my test script you need to have [stockfish](https://github.com/official-stockfish/Stockfish) in your $PATH environment variable**
 
 ## Got a suggestion or issues?
 **note: before suggesting me anything first look at my [To-do](#to-do) list**  
@@ -105,6 +108,7 @@ Just fork it and do whatever you want
 * Make it more efficient
 #### [Features]
 * Add the ability to flip the board
+* Make the bot make better decisions instead of random
 * Make a better help(-h option) prompt
 * Make a better README
 
