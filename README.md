@@ -112,6 +112,3 @@ Just fork it and do whatever you want
 * Make the bot make better decisions instead of random
 * Make a better help(-h option) prompt
 * Make a better README
-
-## What to do if you don't appreciate my work
-* Fuck off
